@@ -1,9 +1,9 @@
-name: OpenTofu Apply
+name: OpenTofu Apply  # Workflow name shown in GitHub Actions tab
 
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # Enables manual execution from the UI
     inputs:
-      confirm_apply:
+      confirm_apply:                 # Require confirmation input
         description: "Type APPLY to confirm deploying the latest main branch"
         required: true
 
@@ -11,7 +11,7 @@ jobs:
   apply:
     runs-on: ubuntu-latest
 
-    env:
+    env:                             # Use required secrets and env vars
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: "us-east-1"
@@ -20,24 +20,24 @@ jobs:
       EXOSCALE_REGION: "at-vie-2"
 
     steps:
-      - name: Check confirmation input
+      - name: Check confirmation input      # Block if user didn’t type APPLY
         if: ${{ github.event.inputs.confirm_apply != 'APPLY' }}
         run: |
           echo "❌ Confirmation failed. You must type APPLY to deploy."
           exit 1
 
-      - name: Checkout main branch
+      - name: Checkout main branch          # Pull latest infra code
         uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: Install OpenTofu
+      - name: Install OpenTofu              # Install OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.6.2
 
-      - name: Initialize OpenTofu
+      - name: Initialize OpenTofu           # Init working directory
         run: tofu init
 
-      - name: Apply with OpenTofu
+      - name: Apply with OpenTofu           # Apply infrastructure
         run: tofu apply -auto-approve
