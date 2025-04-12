@@ -8,6 +8,17 @@ terraform {
         exoscale = {
             source  = "exoscale/exoscale"
         }
+        helm = {
+            source  = "hashicorp/helm"
+            version = "2.12.1"
+        }
     }
 }
 
+provider "exoscale" {}
+
+provider "helm" {
+  kubernetes {
+    config_path = "kubeconfig"
+  }
+}
