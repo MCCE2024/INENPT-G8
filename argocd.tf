@@ -1,7 +1,7 @@
 # https://labs.on-clouds.at/codelabs/iac-opentofu-gitops/?index=..%2F..index#0
 provider "helm" {
   kubernetes {
-    config_path = "kubeconfig"
+    config_path = local_sensitive_file.kubeconfig_file.filename
   }
 }
 
