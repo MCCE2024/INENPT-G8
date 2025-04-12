@@ -1,0 +1,42 @@
+name: Terraform Plan & Apply
+
+on:
+  pull_request:
+    branches: [ main ]
+  push:
+    branches: [ main ]
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: "us-east-1"
+      EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
+      EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
+      EXOSCALE_REGION: "at-vie-2"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OpenTofu
+        uses: opentofu/setup-opentofu@v1
+        with:
+          tofu_version: 1.9.0 
+
+      - name: Initialize OpenTofu
+        run: tofu init
+
+      - name: Validate OpenTofu Config
+        run: tofu validate
+
+      - name: Run OpenTofu Plan
+        if: github.event_name == 'pull_request'
+        run: tofu plan
+
+      - name: Run OpenTofu Apply
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: tofu apply -auto-approve
