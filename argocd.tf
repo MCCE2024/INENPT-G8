@@ -1,4 +1,9 @@
 # https://labs.on-clouds.at/codelabs/iac-opentofu-gitops/?index=..%2F..index#0
+provider "helm" {
+  kubernetes {
+    config_path = "kubeconfig"
+  }
+}
 
 resource "helm_release" "argo_cd" {
   name             = "argocd"
