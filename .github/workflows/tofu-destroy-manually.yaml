@@ -36,8 +36,8 @@ jobs:
 
       - name: Fetch SKS kubeconfig and store
         run: |
-          CLUSTER_NAME=$(exo compute sks list --zone $EXOSCALE_ZONE --output-format json | jq -r '.[0].name')
-          exo compute sks kubeconfig show $CLUSTER_NAME --zone $EXOSCALE_ZONE --admin > kubeconfig
+          CLUSTER_NAME=$(exo compute sks list --zone at-vie-2 --output-format json | jq -r '.[0].name')
+          exo compute sks kubeconfig $CLUSTER_NAME admin --zone at-vie-2 > kubeconfig
           chmod 600 kubeconfig
           echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
 
