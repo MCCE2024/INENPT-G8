@@ -22,6 +22,24 @@ jobs:
       - name: Checkout repository  # Step 1: Checkout code
         uses: actions/checkout@v4
 
+      - name: Install Exoscale CLI
+        continue-on-error: true
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
+
+      - name: Fetch SKS kubeconfig and store
+        continue-on-error: true
+        run: |
+          CLUSTER_NAME=$(exo compute sks list --zone at-vie-2 --output-format json | jq -r '.[0].name')
+          exo compute sks kubeconfig $CLUSTER_NAME admin --zone at-vie-2 > kubeconfig
+          chmod 600 kubeconfig
+          echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+
+      - name: Validate Kubernetes access
+        continue-on-error: true
+        run: |
+          kubectl get nodes
+
       - name: Install OpenTofu     # Step 2: Install OpenTofu CLI
         uses: opentofu/setup-opentofu@v1
         with:
