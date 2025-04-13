@@ -55,4 +55,6 @@ jobs:
         run: tofu init
 
       - name: Destroy with OpenTofu
-        run: tofu destroy -auto-approve
+        run: |
+          tofu destroy -target=helm_release.argo_cd -auto-approve
+          tofu destroy -auto-approve
