@@ -1,9 +1,9 @@
-name: OpenTofu Destroy  # Name shown in GitHub UI
+name: OpenTofu Destroy
 
 on:
-  workflow_dispatch:     # Manually triggered
+  workflow_dispatch:
     inputs:
-      confirm_destroy:                 # User must confirm destructive action
+      confirm_destroy:
         description: "Type YES to confirm destruction"
         required: true
 
@@ -20,23 +20,23 @@ jobs:
       EXOSCALE_REGION: "at-vie-2"
 
     steps:
-      - name: Check confirmation input      # Exit if confirmation isn’t YES
+      - name: Check confirmation input
         if: ${{ github.event.inputs.confirm_destroy != 'YES' }}
         run: |
           echo "❌ Confirmation failed. You must type YES to destroy."
           exit 1
-
-      - name: Checkout main branch          # Get latest infra config
+      - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           ref: main
 
-      - name: Install OpenTofu              # Install the CLI
+      - name: Install OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.6.2
 
-      - name: Initialize OpenTofu           # Init Terraform backend and config
+      - name: Initialize OpenTofu
         run: tofu init
 
       - name: Destroy with OpenTofu
+        run: tofu destroy -auto-approve
