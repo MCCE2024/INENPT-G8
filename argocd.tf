@@ -34,6 +34,6 @@ resource "helm_release" "argo_cd" {
 
   # Ensure kubeconfig exists before this release is deployed
   depends_on = [
-    local_sensitive_file.kubeconfig_file
+    exoscale_sks_nodepool.sks_nodepool
   ]
 }
