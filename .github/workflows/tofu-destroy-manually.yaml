@@ -25,11 +25,31 @@ jobs:
         run: |
           echo "❌ Confirmation failed. You must type YES to destroy."
           exit 1
-
       - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           ref: main
+
+      - name: Install Exoscale CLI
+        run: |
+          curl -sL https://github.com/exoscale/cli/releases/download/v1.97.0/exo-1.97.0-linux-amd64.tar.gz | tar xz
+          sudo mv exo-1.97.0-linux-amd64 /usr/local/bin/exo
+
+      - name: Authenticate with Exoscale
+        run: |
+          exo config init noninteractive \
+            --api-key "${EXOSCALE_API_KEY}" \
+            --api-secret "${EXOSCALE_API_SECRET}"
+
+      - name: Fetch SKS kubeconfig and store
+        run: |
+          exo sks kubeconfig show my-cluster --zone $EXOSCALE_ZONE --admin > kubeconfig
+          chmod 600 kubeconfig
+          echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+
+      - name: Validate Kubernetes access
+        run: |
+          kubectl get nodes
 
       - name: Install OpenTofu
         uses: opentofu/setup-opentofu@v1

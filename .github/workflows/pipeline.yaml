@@ -1,16 +1,16 @@
-name: Terraform Plan & Apply
+name: Terraform Plan & Apply  # Name of the workflow
 
 on:
-  pull_request:
+  pull_request:              # Trigger on PRs targeting main
     branches: [ main ]
-  push:
+  push:                      # Trigger on commits pushed to main
     branches: [ main ]
 
 jobs:
-  terraform:
-    runs-on: ubuntu-latest
+  terraform:                 # Define a job called 'terraform'
+    runs-on: ubuntu-latest   # Use latest Ubuntu runner
 
-    env:
+    env:                     # Define environment variables from GitHub secrets
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: "us-east-1"
@@ -19,24 +19,24 @@ jobs:
       EXOSCALE_REGION: "at-vie-2"
 
     steps:
-      - name: Checkout repository
+      - name: Checkout repository  # Step 1: Checkout code
         uses: actions/checkout@v4
 
-      - name: Install OpenTofu
+      - name: Install OpenTofu     # Step 2: Install OpenTofu CLI
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.9.0 
 
-      - name: Initialize OpenTofu
+      - name: Initialize OpenTofu  # Step 3: Initialize the working directory
         run: tofu init
 
-      - name: Validate OpenTofu Config
+      - name: Validate OpenTofu Config  # Step 4: Check syntax
         run: tofu validate
 
-      - name: Run OpenTofu Plan
+      - name: Run OpenTofu Plan         # Step 5: Plan changes on PR
         if: github.event_name == 'pull_request'
         run: tofu plan
 
-      - name: Run OpenTofu Apply
+      - name: Run OpenTofu Apply        # Step 6: Auto apply on push to main
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: tofu apply -auto-approve
