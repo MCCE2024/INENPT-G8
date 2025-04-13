@@ -1,7 +1,7 @@
 # Configure the Helm provider to interact with the Kubernetes cluster
 provider "helm" {
   kubernetes {
-    config_path = "kubeconfig"  # Use the kubeconfig file generated for SKS access
+    config_path = local_sensitive_file.kubeconfig_file.filename
   }
 }
 

@@ -11,6 +11,21 @@ resource "exoscale_sks_cluster" "sks_cluster" {
   service_level = var.service_level        # Cluster tier (e.g., starter)
 }
 
+resource "exoscale_sks_kubeconfig" "sks_kubeconfig" {
+  zone                  = exoscale_sks_cluster.sks_cluster.zone
+  cluster_id            = exoscale_sks_cluster.sks_cluster.id
+  user                  = "kubernetes-admin"
+  groups                = ["system:masters"]
+  ttl_seconds           = 3600
+  early_renewal_seconds = 300
+}
+
+resource "local_sensitive_file" "kubeconfig_file" {
+  filename        = "kubeconfig"
+  content         = exoscale_sks_kubeconfig.sks_kubeconfig.kubeconfig
+  file_permission = "0600"
+}
+
 # Create a custom security group specifically for the nodepool
 resource "exoscale_security_group" "sks_security_group" {
   name = "sks-security-group"
@@ -73,23 +88,6 @@ resource "exoscale_sks_nodepool" "sks_nodepool" {
     data.exoscale_security_group.default.id,
     resource.exoscale_security_group.sks_security_group.id,
   ]
-}
-
-# Generate a kubeconfig to access the cluster programmatically
-resource "exoscale_sks_kubeconfig" "sks_kubeconfig" {
-  zone                  = exoscale_sks_cluster.sks_cluster.zone
-  cluster_id            = exoscale_sks_cluster.sks_cluster.id
-  user                  = "kubernetes-admin"
-  groups                = ["system:masters"]
-  ttl_seconds           = 3600             # Valid for 1 hour
-  early_renewal_seconds = 300              # Renew 5 min before expiry
-}
-
-# Save the kubeconfig to a local file
-resource "local_sensitive_file" "kubeconfig_file" {
-  filename        = "kubeconfig"
-  content         = exoscale_sks_kubeconfig.sks_kubeconfig.kubeconfig
-  file_permission = "0600"  # Secure file permissions
 }
 
 # Output the SKS API endpoint after provisioning
