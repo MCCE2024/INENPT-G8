@@ -1,7 +1,7 @@
 # Configure the Helm provider to interact with the Kubernetes cluster
 provider "helm" {
   kubernetes {
-    config_path = local_sensitive_file.kubeconfig_file.filename
+    config_path = "kubeconfig"
   }
 }
 
@@ -34,6 +34,6 @@ resource "helm_release" "argo_cd" {
 
   # Ensure kubeconfig exists before this release is deployed
   depends_on = [
-    local_sensitive_file.kubeconfig_file
+    exoscale_sks_nodepool.sks_nodepool
   ]
 }
