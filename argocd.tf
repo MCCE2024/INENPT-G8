@@ -1,7 +1,7 @@
 # Configure the Helm provider to interact with the Kubernetes cluster
 provider "helm" {
   kubernetes {
-    config_path = local_sensitive_file.kubeconfig_file.filename
+    config_path = "kubeconfig"
   }
 }
 

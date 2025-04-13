@@ -34,16 +34,10 @@ jobs:
         run: |
           curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
 
-      - name: Authenticate with Exoscale
-        run: |
-          exo config init noninteractive \
-            --api-key "${EXOSCALE_API_KEY}" \
-            --api-secret "${EXOSCALE_API_SECRET}"
-
       - name: Fetch SKS kubeconfig and store
         run: |
-          CLUSTER_NAME=$(exo sks list --zone $EXOSCALE_ZONE --output-format json | jq -r '.[0].name')
-          exo sks kubeconfig show $CLUSTER_NAME --zone $EXOSCALE_ZONE --admin > kubeconfig
+          CLUSTER_NAME=$(exo compute sks list --zone $EXOSCALE_ZONE --output-format json | jq -r '.[0].name')
+          exo compute sks kubeconfig show $CLUSTER_NAME --zone $EXOSCALE_ZONE --admin > kubeconfig
           chmod 600 kubeconfig
           echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
 
