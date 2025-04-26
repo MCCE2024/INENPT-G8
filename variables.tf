@@ -16,7 +16,7 @@ variable "instance_type" {
 variable "kubernetes_version" {
   description = "The Kubernetes version for the SKS cluster."
   type        = string
-  default     = "1.32.3"
+  default     = "1.33.0"
 }
 
 # Name of the cluster
