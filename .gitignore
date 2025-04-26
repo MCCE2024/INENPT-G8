@@ -1,2 +1,3 @@
 .terraform/
 kubeconfig
+hbgld-api-key*
