@@ -136,6 +136,28 @@ To remove all infrastructure manually:
 
 ---
 
+## 📄 GitHub Workflow Descriptions
+
+The project includes three automated workflows in `.github/workflows/`:
+
+- **`pipeline.yaml`**  
+  Runs automatically on every push or PR to `main`. It:
+  - Installs CLI tools and validates Kubernetes access
+  - Runs `tofu plan` on PRs
+  - Runs `tofu apply -auto-approve` on direct pushes to `main`
+
+- **`tofu-apply-manually.yaml`**  
+  A manual GitHub Action that:
+  - Allows maintainers to trigger `tofu apply` from the UI
+  - Requires entering `APPLY` as confirmation
+
+- **`tofu-destroy-manually.yaml`**  
+  A manual GitHub Action that:
+  - Destroys all infrastructure provisioned by OpenTofu
+  - Requires typing `YES` to proceed, as a safety guard
+
+These workflows help enforce secure and predictable automation for both day-to-day updates and exceptional maintenance.
+
 ## ☁️ What Gets Deployed?
 
 -  Exoscale SKS cluster  in region `at-vie-2`
@@ -145,6 +167,21 @@ To remove all infrastructure manually:
 -  CI/CD automation  for provisioning and cleanup
 
 ---
+
+## 🛠️ Troubleshooting
+
+If a GitHub Action fails:
+
+- Check the **Actions** tab in GitHub to view full logs
+- Ensure required secrets are configured in the repository
+- Make sure your AWS and Exoscale accounts are active and properly scoped
+- Re-run workflows manually via GitHub UI if needed
+
+For local issues:
+
+- Run `tofu validate` to check configuration syntax
+- Use `kubectl get nodes` to test cluster connectivity
+- Re-run `tofu init` if working directory errors occur
 
 ## 🔐 Security
 
