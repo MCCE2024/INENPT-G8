@@ -1,5 +1,7 @@
+# GitHub Actions workflow to manually apply infrastructure changes using OpenTofu
 name: OpenTofu Apply  # Workflow name shown in GitHub Actions tab
 
+# Trigger configuration for manual workflow dispatch
 on:
   workflow_dispatch:  # Enables manual execution from the UI
     inputs:
@@ -7,10 +9,13 @@ on:
         description: "Type APPLY to confirm deploying the latest main branch"
         required: true
 
+# Define the job to run the OpenTofu apply process
 jobs:
   apply:
+    # Use the latest Ubuntu runner environment
     runs-on: ubuntu-latest
 
+    # Set environment variables and secrets needed for the job
     env:                             # Use required secrets and env vars
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -19,6 +24,7 @@ jobs:
       EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
       EXOSCALE_REGION: "at-vie-2"
 
+    # Steps to check input, configure tools, validate access, and run tofu apply
     steps:
       - name: Check confirmation input      # Block if user didn’t type APPLY
         if: ${{ github.event.inputs.confirm_apply != 'APPLY' }}
@@ -32,11 +38,13 @@ jobs:
           ref: main
 
       - name: Install Exoscale CLI
+        # Install the Exoscale CLI to interact with SKS (Scalable Kubernetes Service)
         continue-on-error: true
         run: |
           curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
 
       - name: Fetch SKS kubeconfig and store
+        # Fetch the kubeconfig for the first SKS cluster and store it for kubectl use
         continue-on-error: true
         run: |
           CLUSTER_NAME=$(exo compute sks list --zone at-vie-2 --output-format json | jq -r '.[0].name')
@@ -45,17 +53,21 @@ jobs:
           echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
 
       - name: Validate Kubernetes access
+        # Verify that kubectl can access the Kubernetes cluster
         continue-on-error: true
         run: |
           kubectl get nodes
 
       - name: Install OpenTofu              # Install OpenTofu
+        # Set up the specified version of OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.6.2
 
       - name: Initialize OpenTofu           # Init working directory
+        # Run tofu init to initialize the Terraform/OpenTofu working directory
         run: tofu init
 
       - name: Apply with OpenTofu           # Apply infrastructure
+        # Run tofu apply to deploy the infrastructure changes
         run: tofu apply -auto-approve

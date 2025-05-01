@@ -1,15 +1,18 @@
 name: Terraform Plan & Apply  # Name of the workflow
 
+ # Trigger the workflow on pull requests and pushes to the main branch
 on:
   pull_request:              # Trigger on PRs targeting main
     branches: [ main ]
   push:                      # Trigger on commits pushed to main
     branches: [ main ]
 
+ # Define the job for Terraform operations
 jobs:
   terraform:                 # Define a job called 'terraform'
     runs-on: ubuntu-latest   # Use latest Ubuntu runner
 
+    # Set environment variables required for AWS and Exoscale access
     env:                     # Define environment variables from GitHub secrets
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -18,15 +21,18 @@ jobs:
       EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
       EXOSCALE_REGION: "at-vie-2"
 
+    # List of steps to set up tools, validate cluster access, and run Terraform plans and applies
     steps:
       - name: Checkout repository  # Step 1: Checkout code
         uses: actions/checkout@v4
 
+      # Install the Exoscale CLI tool for interacting with the SKS cluster
       - name: Install Exoscale CLI
         continue-on-error: true
         run: |
           curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
 
+      # Get the kubeconfig of the first SKS cluster and save it for kubectl access
       - name: Fetch SKS kubeconfig and store
         continue-on-error: true
         run: |
@@ -35,26 +41,32 @@ jobs:
           chmod 600 kubeconfig
           echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
 
+      # Check if the Kubernetes cluster is accessible
       - name: Validate Kubernetes access
         continue-on-error: true
         run: |
           kubectl get nodes
 
+      # Install the specified version of OpenTofu CLI
       - name: Install OpenTofu     # Step 2: Install OpenTofu CLI
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.9.0 
 
+      # Initialize the Terraform/OpenTofu working directory
       - name: Initialize OpenTofu  # Step 3: Initialize the working directory
         run: tofu init
 
+      # Validate the Terraform configuration files
       - name: Validate OpenTofu Config  # Step 4: Check syntax
         run: tofu validate
 
+      # Run tofu plan to preview changes on pull request events
       - name: Run OpenTofu Plan         # Step 5: Plan changes on PR
         if: github.event_name == 'pull_request'
         run: tofu plan
 
+      # Automatically apply Terraform changes when code is pushed to main
       - name: Run OpenTofu Apply        # Step 6: Auto apply on push to main
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: tofu apply -auto-approve
