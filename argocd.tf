@@ -5,6 +5,13 @@ provider "helm" {
   }
 }
 
+locals {
+  repo_url = "https://github.com/MCCE2024/INENPT-G8"
+  repo_path = "gitops-base"
+  app_name = "gitops-base"
+  app_namespace = "argocd"
+}
+
 # Install ArgoCD via the official Helm chart
 resource "helm_release" "argo_cd" {
   name             = "argocd"                                  # Name of the Helm release
@@ -19,17 +26,12 @@ resource "helm_release" "argo_cd" {
 
   # Customize ArgoCD service to expose a LoadBalancer on ports 80 and 443
   values = [
-    yamlencode({
-      server = {
-        service = {
-          type = "LoadBalancer"
-          ports = {
-            http  = 80
-            https = 443
-          }
-        }
-      }
-    })
+      templatefile("app-values.yaml", {
+        repo_url      = local.repo_url
+        repo_path     = local.repo_path
+        app_name      = local.app_name
+        app_namespace = local.app_namespace
+      })
   ]
 
   # Ensure kubeconfig exists before this release is deployed
