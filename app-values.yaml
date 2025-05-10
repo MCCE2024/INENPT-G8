@@ -7,7 +7,7 @@ applications:
       path: ${repo_path}
     destination:
       server: https://kubernetes.default.svc
-      namespace: ${app_namespace}
+      namespace: argocd
     syncPolicy:
       automated: {}
       syncOptions:
