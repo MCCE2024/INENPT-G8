@@ -33,16 +33,23 @@ variable "nodepool_name" {
   default     = "sks-nodepool"
 }
 
-# Number of nodes
+# Number of nodes in the nodepool
 variable "nodepool_size" {
   description = "The size of the SKS nodepool."
   type        = number
   default     = 3
 }
 
-# Service level (starter, pro, etc.)
+# Service level for the SKS cluster (e.g., starter, pro)
 variable "service_level" {
   description = "The service level for the SKS cluster."
   type        = string
   default     = "starter"
+}
+
+# Password for the appuser database user (should be provided securely)
+variable "apgdb_pw" {
+  description = "Password for the appuser database user"
+  type        = string
+  sensitive   = true
 }

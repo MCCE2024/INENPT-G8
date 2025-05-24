@@ -20,6 +20,7 @@ jobs:
       EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
       EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
       EXOSCALE_REGION: "at-vie-2"
+      TF_VAR_PGDB_PW: ${{ secrets.TF_VAR_PGDB_PW }}
 
     # List of steps to set up tools, validate cluster access, and run Terraform plans and applies
     steps:

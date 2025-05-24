@@ -1,59 +1,61 @@
 resource "exoscale_dbaas_service" "pg" {
-  name             = "inenpt-g8-db"
-  type             = "pg"
-  plan             = "starter-2"
-  maintenance_day  = "monday"
-  maintenance_time = "10:00:00"
-  termination_protection = false
-  zone             = "at-vie-2"
+  name             = "inenpt-g8-db"         # Name des DBaaS-Services
+  type             = "pg"                   # Datenbanktyp: PostgreSQL
+  plan             = "starter-2"            # Tarif/Größe der Instanz
+  maintenance_day  = "monday"               # Wochentag für Wartung
+  maintenance_time = "10:00:00"             # Uhrzeit für Wartung
+  termination_protection = false            # Schutz vor versehentlichem Löschen
+  zone             = "at-vie-2"             # Exoscale-Zone
 
   pg_user_config {
-    public_access = true
+    public_access = true                    # Erlaubt öffentlichen Zugriff (Achtung: Sicherheit beachten!)
   }
 }
 
+# Legt eine zusätzliche Datenbank im Service an
 resource "exoscale_dbaas_pg_database" "appdb" {
   service_name = exoscale_dbaas_service.pg.name
-  name         = "appdb"
+  name         = "appdb"                    # Name der App-Datenbank
 }
 
-#resource "exoscale_dbaas_pg_user" "appuser" {
- #service_name = exoscale_dbaas_service.pg.name
-  #username     = "appuser"
-  #password     = "securepassword123!" # Am besten als Variable oder Secret verwalten!
-  # Optional: privileges für bestimmte Datenbanken
-  # privileges {
-  #   database = exoscale_dbaas_pg_database.appdb.name
-  #   permission = "ALL"
-  # }
-#}
+# Legt einen Benutzer für die App-Datenbank an
+resource "exoscale_dbaas_pg_user" "appuser" {
+  service_name = exoscale_dbaas_service.pg.name
+  username     = "appuser"                  # Benutzername
+  password     = var.pgdb_pw                # Passwort (als Variable, nicht hardcoded!)
+  privileges {
+    database   = exoscale_dbaas_pg_database.appdb.name
+    permission = "ALL"                      # Alle Rechte auf die App-Datenbank
+  }
+}
 
+# Outputs für die Weiterverwendung (z.B. in der App oder CI/CD)
 output "db_host" {
-  value = exoscale_dbaas_service.pg.host
+  value = exoscale_dbaas_service.pg.host    # Hostname des DB-Services
 }
 
 output "db_user" {
-  value = exoscale_dbaas_service.pg.user
+  value = exoscale_dbaas_service.pg.user    # Default-Admin-User des DB-Services
 }
 
 output "db_password" {
   value     = exoscale_dbaas_service.pg.password
-  sensitive = true
+  sensitive = true                          # Markiert als sensibel (wird nicht im Klartext angezeigt)
 }
 
 output "db_name" {
-  value = exoscale_dbaas_service.pg.database_name
+  value = exoscale_dbaas_service.pg.database_name # Default-Datenbankname
 }
 
 output "appdb_name" {
-  value = exoscale_dbaas_pg_database.appdb.name
+  value = exoscale_dbaas_pg_database.appdb.name   # Name der App-Datenbank
 }
 
 output "appuser_username" {
-  value = exoscale_dbaas_pg_user.appuser.username
+  value = exoscale_dbaas_pg_user.appuser.username # App-Benutzername
 }
 
 output "appuser_password" {
   value     = exoscale_dbaas_pg_user.appuser.password
-  sensitive = true
+  sensitive = true                                # Markiert als sensibel
 }
