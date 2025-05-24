@@ -56,7 +56,7 @@ jobs:
 
       # Initialize the Terraform/OpenTofu working directory
       - name: Initialize OpenTofu  # Step 3: Initialize the working directory
-        run: tofu init
+        run: tofu init -upgrade # Upgrade the OpenTofu provider plugins
 
       # Validate the Terraform configuration files
       - name: Validate OpenTofu Config  # Step 4: Check syntax
