@@ -1,7 +1,7 @@
 resource "exoscale_dbaas" "pg" {
   name = "postgres-db"
   type = "pg"
-  plan = "startup-4"
+  plan = "hobbyist-2"
   zone = var.zone
  
   pg {
