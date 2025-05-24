@@ -10,6 +10,7 @@ terraform {
   required_providers {
     exoscale = {
       source = "exoscale/exoscale"   # Exoscale cloud provider
+      version = ">= 0.54.0"
     }
     helm = {
       source  = "hashicorp/helm"     # Helm chart provider

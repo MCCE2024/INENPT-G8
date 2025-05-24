@@ -48,7 +48,7 @@ variable "service_level" {
 }
 
 # Password for the appuser database user (should be provided securely)
-variable "apgdb_pw" {
+variable "pgdb_pw" {
   description = "Password for the appuser database user"
   type        = string
   sensitive   = true
