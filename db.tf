@@ -3,6 +3,9 @@ resource "exoscale_dbaas" "pg" {
   plan             = "starter-2"            # Tarif/Größe der Instanz
   type             = "pg"
   zone             = "at-vie-2"             # Exoscale-Zone
+  pg = {
+    version = "15"                          # PostgreSQL-Version
+  }
 }
 
 # Legt eine zusätzliche Datenbank im Service an
