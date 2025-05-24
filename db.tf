@@ -19,13 +19,9 @@ resource "exoscale_dbaas_pg_database" "appdb" {
 
 # Legt einen Benutzer für die App-Datenbank an
 resource "exoscale_dbaas_pg_user" "appuser" {
-  service_name = exoscale_dbaas_pg.pg.name
+  service = exoscale_dbaas_pg.pg.name
   username     = "appuser"                  # Benutzername
-  password     = var.pgdb_pw                # Passwort (als Variable, nicht hardcoded!)
-  privileges {
-    database   = exoscale_dbaas_pg_database.appdb.name
-    permission = "ALL"                      # Alle Rechte auf die App-Datenbank
-  }
+  zone         = "at-vie-2"                 # Exoscale-Zone
 }
 
 # Outputs für die Weiterverwendung (z.B. in der App oder CI/CD)
