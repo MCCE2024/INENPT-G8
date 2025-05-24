@@ -23,6 +23,7 @@ jobs:
       EXOSCALE_API_KEY: ${{ secrets.EXOSCALE_API_KEY }}
       EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
       EXOSCALE_REGION: "at-vie-2"
+      TF_VAR_PGDB_PW: ${{ secrets.TF_VAR_PGDB_PW }}
 
     # Steps to check input, configure tools, validate access, and run tofu apply
     steps:
