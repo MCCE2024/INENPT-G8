@@ -1,23 +1,25 @@
-resource "exoscale_dbaas" "pg" {
+resource "exoscale_dbaas_pg" "pg" {
   name             = "inenpt-g8-db"         # Name des DBaaS-Services
   plan             = "starter-2"            # Tarif/Größe der Instanz
-  type             = "pg"
-  zone             = "at-vie-2"             # Exoscale-Zone
-  pg = {
-    version = "15"                          # PostgreSQL-Version
+  maintenance_day  = "monday"
+  maintenance_time = "10:00:00"
+  termination_protection = false
+  zone             = "at-vie-2"
+
+  pg_user_config {
+    public_access = true
   }
 }
 
-# Legt eine zusätzliche Datenbank im Service an
 resource "exoscale_dbaas_pg_database" "appdb" {
-  service = exoscale_dbaas.pg.id
-  database_name         = "appdb"                    # Name der App-Datenbank
-  zone         = "at-vie-2" 
+  service = exoscale_dbaas_pg.pg.id
+  name    = "appdb"
 }
 
-# Legt einen Benutzer für die App-Datenbank an
 resource "exoscale_dbaas_pg_user" "appuser" {
-  service = exoscale_dbaas.pg.id
-  username     = "appuser"                  # Benutzername
-  zone         = "at-vie-2"                 # Exoscale-Zone
+  service    = exoscale_dbaas_pg.pg.id
+  name       = "appuser"
+  password   = var.pgdb_pw
+  privileges = ["appdb:ALL"]
+  zone       = "at-vie-2"
 }
