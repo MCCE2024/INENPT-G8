@@ -14,12 +14,12 @@ resource "exoscale_dbaas" "pg" {
  
 resource "exoscale_dbaas_pg_database" "appdb" {
   database_name = "appdb"
-  service       = exoscale_dbaas.my_pg.name
-  zone          = exoscale_dbaas.my_pg.zone
+  service       = exoscale_dbaas.pg.name
+  zone          = exoscale_dbaas.pg.zone
 }
  
 resource "exoscale_dbaas_pg_user" "appuser" {
   username = "appuser"
-  service  = exoscale_dbaas.my_pg.name
-  zone     = exoscale_dbaas.my_pg.zone
+  service  = exoscale_dbaas.pg.name
+  zone     = exoscale_dbaas.pg.zone
 }
