@@ -42,6 +42,7 @@ These secrets must be added to your repository for GitHub Actions to work:
 | `EXOSCALE_API_SECRET`    | Exoscale API secret                    |
 | `AWS_ACCESS_KEY_ID`      | AWS IAM user's access key              |
 | `AWS_SECRET_ACCESS_KEY`  | AWS IAM user's secret key              |
+| `TF_VAR_PGDB_PW`         | Database user's secret key              |
 
 ---
 
