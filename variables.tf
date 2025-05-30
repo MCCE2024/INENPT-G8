@@ -46,10 +46,3 @@ variable "service_level" {
   type        = string
   default     = "starter"
 }
-
-# Password for the appuser database user (should be provided securely)
-variable "pgdb_pw" {
-  description = "Password for the appuser database user"
-  type        = string
-  sensitive   = true
-}
