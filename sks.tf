@@ -5,10 +5,10 @@ data "exoscale_security_group" "default" {
 
 # Create a new SKS cluster in Exoscale
 resource "exoscale_sks_cluster" "sks_cluster" {
-  zone          = var.zone                 # Region/zone for the cluster
-  name          = var.cluster_name         # Name of the cluster
-  version       = var.kubernetes_version   # Kubernetes version
-  service_level = var.service_level        # Cluster tier (e.g., starter)
+  zone          = var.zone               # Region/zone for the cluster
+  name          = var.cluster_name       # Name of the cluster
+  version       = var.kubernetes_version # Kubernetes version
+  service_level = var.service_level      # Cluster tier (e.g., starter)
 }
 
 resource "exoscale_sks_kubeconfig" "sks_kubeconfig" {
@@ -33,24 +33,24 @@ resource "exoscale_security_group" "sks_security_group" {
 
 # Allow TCP traffic for Kubelet between nodes
 resource "exoscale_security_group_rule" "kubelet" {
-  security_group_id        = exoscale_security_group.sks_security_group.id
-  description              = "Kubelet"
-  type                     = "INGRESS"
-  protocol                 = "TCP"
-  start_port               = 10250
-  end_port                 = 10250
-  user_security_group_id   = exoscale_security_group.sks_security_group.id
+  security_group_id      = exoscale_security_group.sks_security_group.id
+  description            = "Kubelet"
+  type                   = "INGRESS"
+  protocol               = "TCP"
+  start_port             = 10250
+  end_port               = 10250
+  user_security_group_id = exoscale_security_group.sks_security_group.id
 }
 
 # Allow Calico VXLAN UDP traffic between nodes for pod networking
 resource "exoscale_security_group_rule" "calico_vxlan" {
-  security_group_id        = exoscale_security_group.sks_security_group.id
-  description              = "VXLAN (Calico)"
-  type                     = "INGRESS"
-  protocol                 = "UDP"
-  start_port               = 4789
-  end_port                 = 4789
-  user_security_group_id   = exoscale_security_group.sks_security_group.id
+  security_group_id      = exoscale_security_group.sks_security_group.id
+  description            = "VXLAN (Calico)"
+  type                   = "INGRESS"
+  protocol               = "UDP"
+  start_port             = 4789
+  end_port               = 4789
+  user_security_group_id = exoscale_security_group.sks_security_group.id
 }
 
 # Public access to NodePort services (TCP)
@@ -61,7 +61,7 @@ resource "exoscale_security_group_rule" "nodeport_tcp" {
   protocol          = "TCP"
   start_port        = 30000
   end_port          = 32767
-  cidr              = "0.0.0.0/0"  # Public access
+  cidr              = "0.0.0.0/0" # Public access
 }
 
 # Public access to NodePort services (UDP)
@@ -72,16 +72,16 @@ resource "exoscale_security_group_rule" "nodeport_udp" {
   protocol          = "UDP"
   start_port        = 30000
   end_port          = 32767
-  cidr              = "0.0.0.0/0"  # Public access
+  cidr              = "0.0.0.0/0" # Public access
 }
 
 # Create a nodepool for the SKS cluster
 resource "exoscale_sks_nodepool" "sks_nodepool" {
-  cluster_id          = exoscale_sks_cluster.sks_cluster.id
-  zone                = exoscale_sks_cluster.sks_cluster.zone
-  name                = var.nodepool_name
-  instance_type       = var.instance_type
-  size                = var.nodepool_size
+  cluster_id    = exoscale_sks_cluster.sks_cluster.id
+  zone          = exoscale_sks_cluster.sks_cluster.zone
+  name          = var.nodepool_name
+  instance_type = var.instance_type
+  size          = var.nodepool_size
 
   # Attach both the default and custom security groups
   security_group_ids = [
