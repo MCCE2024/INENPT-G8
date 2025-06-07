@@ -12,6 +12,8 @@ resource "exoscale_dbaas" "pg" {
     backup_schedule = "04:00"                                    # Daily backup time (UTC)
     ip_filter       = ["0.0.0.0/0"]                              # Allow connections from any IP address (not recommended for production)
     pg_settings     = jsonencode({ timezone = "Europe/Berlin" }) # Set timezone setting for PostgreSQL
+    admin_username = var.PGDB_ADMIN
+    admin_password = var.PGDB_PW
   }
 }
 

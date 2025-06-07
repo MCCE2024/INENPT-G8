@@ -16,6 +16,10 @@ terraform {
       source  = "hashicorp/helm" # Helm chart provider
       version = "2.12.1"         # Specific version
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes" # Kubernetes provider
+      version = "2.37.1"               # Specific version
+    }
   }
 }
 

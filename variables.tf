@@ -46,3 +46,21 @@ variable "service_level" {
   type        = string
   default     = "starter"
 }
+
+# DB
+variable "PGDB_ADMIN" {
+  description = "The admin username for the PostgreSQL database."
+  type        = string
+  default     = "admin"
+  
+}
+
+variable "PGDB_PW" {
+  description = "The admin password for the PostgreSQL database."
+  type        = string
+}
+
+variable "CLOUDFLARE_API_TOKEN" {
+  description = "value of the Cloudflare API token"
+  type        = string
+}
