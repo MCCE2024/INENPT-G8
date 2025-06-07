@@ -1,5 +1,7 @@
+# Define the DNS provider used by ExternalDNS
 provider: 
   name: cloudflare
+# Provide the Cloudflare API token securely using Kubernetes secrets
 env:
   - name: CF_API_TOKEN
     valueFrom:

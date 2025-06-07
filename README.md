@@ -200,7 +200,7 @@ For local issues:
 
 ---
 
-## K8s Bootstrap
+## 🥾 K8s Bootstrap
 
 Get initial Admin Password:
 ```sh
