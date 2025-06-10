@@ -200,6 +200,53 @@ For local issues:
 
 ---
 
+## 🥾 K8s Bootstrap
+
+Get initial Admin Password:
+```sh
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+---
+
+Install NGINX:
+```sh
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+
+helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
+```
+
+Install SealedSecrets:
+TODO
+
+Install ExternalDNS:
+Create Values file for configuration:
+```sh
+provider: 
+  name: cloudflare
+env:
+  - name: CF_API_TOKEN
+    valueFrom:
+      secretKeyRef:
+        name: cloudflare-api-key
+        key: apiKey
+```
+
+Create secret:
+```sh
+kubectl create secret generic cloudflare-api-token --from-literal=apiKey=<API-KEY> --from-literal=email=<EMAIL> -n external-dns
+```
+
+```sh
+helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
+helm repo update
+
+helm upgrade --install external-dns external-dns/external-dns \
+  --namespace external-dns \
+  --create-namespace \
+  --values values.yaml
+```
+
 ## 🤝 Contributing
 
 We welcome contributions from the team.  

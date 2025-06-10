@@ -1,4 +1,4 @@
-# Use the default Exoscale security group for the nodepool
+# Retrieve the default security group provided by Exoscale
 data "exoscale_security_group" "default" {
   name = "default"
 }
@@ -11,6 +11,7 @@ resource "exoscale_sks_cluster" "sks_cluster" {
   service_level = var.service_level      # Cluster tier (e.g., starter)
 }
 
+# Generate a kubeconfig file for accessing the SKS cluster
 resource "exoscale_sks_kubeconfig" "sks_kubeconfig" {
   zone                  = exoscale_sks_cluster.sks_cluster.zone
   cluster_id            = exoscale_sks_cluster.sks_cluster.id
@@ -20,13 +21,15 @@ resource "exoscale_sks_kubeconfig" "sks_kubeconfig" {
   early_renewal_seconds = 300
 }
 
+
+# Store the generated kubeconfig file securely on the local machine
 resource "local_sensitive_file" "kubeconfig_file" {
   filename        = "kubeconfig"
   content         = exoscale_sks_kubeconfig.sks_kubeconfig.kubeconfig
   file_permission = "0600"
 }
 
-# Create a custom security group specifically for the nodepool
+# Define a new security group for SKS nodepool networking
 resource "exoscale_security_group" "sks_security_group" {
   name = "sks-security-group"
 }
@@ -75,7 +78,7 @@ resource "exoscale_security_group_rule" "nodeport_udp" {
   cidr              = "0.0.0.0/0" # Public access
 }
 
-# Create a nodepool for the SKS cluster
+# Create a nodepool and attach it to the SKS cluster with necessary security groups
 resource "exoscale_sks_nodepool" "sks_nodepool" {
   cluster_id    = exoscale_sks_cluster.sks_cluster.id
   zone          = exoscale_sks_cluster.sks_cluster.zone
@@ -90,7 +93,7 @@ resource "exoscale_sks_nodepool" "sks_nodepool" {
   ]
 }
 
-# Output the SKS API endpoint after provisioning
+# Output the API endpoint URL for the created SKS cluster
 output "sks_cluster_endpoint" {
   value = exoscale_sks_cluster.sks_cluster.endpoint
 }
