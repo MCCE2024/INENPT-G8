@@ -234,7 +234,7 @@ env:
 
 Create secret:
 ```sh
-kubectl create secret generic cloudflare-api-key --from-literal=apiKey=<API-KEY> --from-literal=email=<EMAIL> -n external-dns
+kubectl create secret generic cloudflare-api-token --from-literal=apiKey=<API-KEY> --from-literal=email=<EMAIL> -n external-dns
 ```
 
 ```sh

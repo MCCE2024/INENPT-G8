@@ -20,6 +20,8 @@ resource "kubernetes_namespace" "external_dns" {
   metadata {
     name = "external-dns"
   }
+
+  depends_on = [ exoscale_sks_cluster.sks_cluster ]
 }
 
 resource "kubernetes_secret" "cloudflare_api_token" {
