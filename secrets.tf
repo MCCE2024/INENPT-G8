@@ -9,8 +9,8 @@ resource "kubernetes_secret" "pg_secret" {
   }
 
   data = {
-    admin_username = base64encode(var.PGDB_ADMIN)
-    admin_password = base64encode(var.PGDB_PW)
+    admin_username = var.PGDB_ADMIN
+    admin_password = var.PGDB_PW
   }
 
   type = "Opaque"
@@ -31,7 +31,7 @@ resource "kubernetes_secret" "cloudflare_api_token" {
   }
 
   data = {
-    apiKey = base64encode(var.CLOUDFLARE_API_TOKEN)
+    apiKey = var.CLOUDFLARE_API_TOKEN
   }
 
   type = "Opaque"
