@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: webshop-applicationset
+  name: webshop
   namespace: argocd
 spec:
   generators:
@@ -17,15 +17,27 @@ spec:
         tenant: '{{path.basename}}'
     spec:
       project: "default"
-      source:
-        repoURL: https://github.com/MCCE2024/AKTT1_G8.git
-        targetRevision: 1.3.0
-        path: Charts/webshop
-        helm:
-          valueFiles:
-          - $values/gitops-base/apps/webshop/tenants/{{path.basename}}/values.yaml
+      # Define multiple sources: one for the chart, one for the values
+      sources:
+        # Source 1: The Helm Chart
+        - repoURL: https://github.com/MCCE2024/AKTT1_G8.git
+          targetRevision: 1.3.0
+          path: Helm-chart/webshop
+          helm:
+            # Reference the values file from the 'values' source by name
+            valueFiles:
+              - $values/values.yaml
+        # Source 2: The values file from your GitOps repo
+        - repoURL: https://github.com/MCCE2024/INENPT-G8.git
+          targetRevision: feature/argo-cd-setup
+          # The ref name is used in the valueFiles reference above
+          ref: values
+          path: 'gitops-base/apps/webshop/tenants/{{path.basename}}'
       destination:
         server: "https://kubernetes.default.svc"
+        # This will need to be static or you must use a different approach
+        # if the namespace is defined inside the values file.
+        # For now, let's create a predictable namespace.
         namespace: 'webshop-{{path.basename}}'
       syncPolicy:
         automated:
