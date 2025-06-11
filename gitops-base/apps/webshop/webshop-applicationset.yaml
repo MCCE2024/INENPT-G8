@@ -1,49 +1,26 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: webshop
-  namespace: argocd
+  name: webshop-applicationset
 spec:
   generators:
-  - git:
-      repoURL: https://github.com/MCCE2024/INENPT-G8.git
-      revision: feature/argo-cd-setup
-      files:
-      - path: "gitops-base/apps/webshop/tenants/*/values.yaml"
+    - git:
+        repoURL: https://github.com/MCCE2024/INENPT-G8
+        revision: HEAD
+        directories:
+          - path: "gitops-base/apps/webshop/tenants/*"
   template:
     metadata:
-      name: 'webshop-{{path.basename}}'
-      labels:
-        tenant: '{{path.basename}}'
+      name: "webshop-{{path.basename}}"
     spec:
-      project: "default"
-      # Define multiple sources: one for the chart, one for the values
-      sources:
-        # Source 1: The Helm Chart
-        - repoURL: https://github.com/MCCE2024/AKTT1_G8.git
-          targetRevision: 1.3.0
-          path: Charts/webshop
-          helm:
-            # Reference the values file from the 'values' source by name
-            values:
-              namespace: '{{path.basename}}'
-              cart-service:
-                namespace: '{{path.basename}}'
-              product-service:
-                namespace: '{{path.basename}}'
-              payment-service:
-                namespace: '{{path.basename}}'
-              frontend:
-                namespace: '{{path.basename}}'
+      project: default
+      source:
+        repoURL: https://github.com/MCCE2024/AKTT1_G8
+        targetRevision: 1.3.0
+        path: Chart/webshop
+        helm:
+          values: |
+            {{ importstr "gitops-base/apps/webshop/tenants/" + path.basename + "/values.yaml" }}
       destination:
-        server: "https://kubernetes.default.svc"
-        # This will need to be static or you must use a different approach
-        # if the namespace is defined inside the values file.
-        # For now, let's create a predictable namespace.
-        namespace: '{{path.basename}}'
-      syncPolicy:
-        automated:
-          prune: true
-          selfHeal: true
-        syncOptions:
-        - CreateNamespace=true
+        server: https://kubernetes.default.svc
+        namespace: "{{path.basename}}"
