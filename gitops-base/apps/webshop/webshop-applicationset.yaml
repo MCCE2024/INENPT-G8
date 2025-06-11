@@ -37,8 +37,9 @@ spec:
         helm:
           # (4) THE MAGIC LINK: This placeholder tells Argo CD to use the
           # values file that was found by the generator for this specific application.
+          # values.yaml in directory 'tenants'
           valueFiles:
-            - 'values.yaml'
+            - '{{path.basename}}/values.yaml'  # Use the basename of the directory as the values file
 
       # DESTINATION: Where to deploy the application.
       destination:
