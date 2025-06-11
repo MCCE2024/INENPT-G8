@@ -1,37 +1,42 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: webshop-matrix
+  name: webshop-appset
+  namespace: argocd
 spec:
+  goTemplate: true
+  goTemplateOptions:
+  - missingkey=error
   generators:
-    - matrix:
-        generators:
-          # Tenant values generator
-          - git:
-              repoURL: https://github.com/MCCE2024/INENPT-G8
-              revision: feature/argo-cd-setup
-              directories:
-                - path: "gitops-base/apps/webshop/tenants/*"
-          
-          # Helm chart generator 
-          - git:
-              repoURL: https://github.com/MCCE2024/AKTT1_G8
-              revision: 1.3.0
-              files:
-                - path: "Chart/webshop/**"
-
+    - git:
+      repoURL: https://github.com/MCCE2024/INENPT-G8.git
+      revision: feature/argo-cd-setup
+      files:
+      - path: "gitops-base/apps/webshop/tenants/*/values.yaml"
   template:
     metadata:
       name: "webshop-{{path.basename}}"
     spec:
-      project: default
-      source:
-        repoURL: https://github.com/MCCE2024/AKTT1_G8
-        targetRevision: 1.3.0
-        path: "Charts/webshop"
-        helm:
-          valueFiles:
-            - "../../../../INENPT-G8/gitops-base/apps/webshop/tenants/{{path.basename}}/values.yaml"
+      project: "default"
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - PrunePropagationPolicy=foreground
+        - PrunePropagationPolicy=background
+        - CreateNamespace=true
+        - ServerSideApply=true
+      sources:
+        - path: Charts/webshop
+          repoURL: https://github.com/MCCE2024/AKTT1_G8.git
+          targetRevision: 1.3.0
+          helm:
+            valueFiles:
+            - $values/gitops-base/apps/webshop/tenants/{{path.basename}}/values.yaml
+        - repoURL: https://github.com/MCCE2024/INENPT-G8.git
+          targetRevision: feature/argo-cd-setup
+          ref: values
       destination:
-        server: https://kubernetes.default.svc
-        namespace: "{{path.basename}}"
+        namespace: '{{path.basename}}'
+        server: "https://kubernetes.default.svc"
