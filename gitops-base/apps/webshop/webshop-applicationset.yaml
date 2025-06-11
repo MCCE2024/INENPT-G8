@@ -25,20 +25,22 @@ spec:
           path: Charts/webshop
           helm:
             # Reference the values file from the 'values' source by name
-            valueFiles:
-              - $values/values.yaml
-        # Source 2: The values file from your GitOps repo
-        - repoURL: https://github.com/MCCE2024/INENPT-G8.git
-          targetRevision: feature/argo-cd-setup
-          # The ref name is used in the valueFiles reference above
-          ref: values
-          path: 'gitops-base/apps/webshop/tenants/{{path.basename}}'
+            values:
+              namespace: '{{path.basename}}'
+              cart-service:
+                namespace: '{{path.basename}}'
+              product-service:
+                namespace: '{{path.basename}}'
+              payment-service:
+                namespace: '{{path.basename}}'
+              frontend:
+                namespace: '{{path.basename}}'
       destination:
         server: "https://kubernetes.default.svc"
         # This will need to be static or you must use a different approach
         # if the namespace is defined inside the values file.
         # For now, let's create a predictable namespace.
-        namespace: 'webshop-{{path.basename}}'
+        namespace: '{{path.basename}}'
       syncPolicy:
         automated:
           prune: true
