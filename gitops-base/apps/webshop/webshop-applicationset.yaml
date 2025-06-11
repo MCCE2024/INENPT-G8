@@ -29,11 +29,11 @@ spec:
           path: Charts/webshop
           helm:
             valueFiles:
-              - $values/{{path.basename}}.yaml
+              - $values/values.yaml
         - repoURL: https://github.com/MCCE2024/INENPT-G8.git
           targetRevision: feature/argo-cd-setup
           ref: values
-          path: "gitops-base/apps/webshop/tenants/{{path.basename}}"
+          path: "{{path.directory}}"
       destination:
         namespace: "{{path.basename}}"
         server: https://kubernetes.default.svc
