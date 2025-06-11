@@ -25,13 +25,14 @@ spec:
       # (3) SOURCE: Defines the Helm chart and which values file to use.
       source:
         # The repo where the Helm chart is.
+        # The Git repository where the chart source is
         repoURL: https://github.com/MCCE2024/AKTT1_G8.git
-        
-        # The name of the chart in that repo.
-        chart: Charts/webshop
-        
-        # The branch/version of the chart to use.
+
+        # The branch or tag in the Git repo to use
         targetRevision: 1.3.0
+
+        # The path to the directory containing Chart.yaml inside the Git repo
+        path: Charts/webshop # <-- Use 'path' instead of 'chart'
         
         helm:
           # (4) THE MAGIC LINK: This placeholder tells Argo CD to use the
