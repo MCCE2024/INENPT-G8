@@ -19,7 +19,7 @@ spec:
       project: "default"
       source:
         repoURL: https://github.com/MCCE2024/AKTT1_G8.git
-        targetRevision: HEAD
+        targetRevision: 1.3.0
         path: Chart/webshop
         helm:
           valueFiles:
