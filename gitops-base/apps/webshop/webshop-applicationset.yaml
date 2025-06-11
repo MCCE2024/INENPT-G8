@@ -23,7 +23,7 @@ spec:
         path: Charts/webshop
         helm:
           valueFiles:
-          - $values/apps/webshop/tenants/{{path.basename}}/values.yaml
+          - $values/gitops-base/apps/webshop/tenants/{{path.basename}}/values.yaml
       destination:
         server: "https://kubernetes.default.svc"
         namespace: 'webshop-{{path.basename}}'
