@@ -4,49 +4,48 @@ metadata:
   name: webshop-applicationset
   namespace: argocd
 spec:
-  # (1) THE GENERATOR: Find all .yaml files in the 'environments' directory.
   generators:
     - git:
-        # The repo where the values files are.
         repoURL: https://github.com/MCCE2024/INENPT-G8.git
         revision: feature/argo-cd-setup
         directories:
-          # The glob pattern to find the files.
+          # This path MUST be correct in your Git repo
           - path: "gitops-base/apps/webshop/tenants/*"
-
-  # (2) THE TEMPLATE: This is the blueprint for the Applications that will be created.
   template:
     metadata:
-      # Create a unique name for each app based on the filename (e.g., 'my-awesome-app-staging')
       name: 'webshop-{{path.basename}}'
     spec:
       project: default
       
-      # (3) SOURCE: Defines the Helm chart and which values file to use.
-      source:
-        # The repo where the Helm chart is.
-        # The Git repository where the chart source is
-        repoURL: https://github.com/MCCE2024/AKTT1_G8.git
+      # --- CORRECTED MULTIPLE SOURCES SECTION ---
+      sources:
+        # Source 1: The Helm chart from its repository
+        - repoURL: https://github.com/MCCE2024/AKTT1_G8.git
+          targetRevision: 1.3.0
+          path: Charts/webshop
+          ref: chart # Give it a reference name
 
-        # The branch or tag in the Git repo to use
-        targetRevision: 1.3.0
+        # Source 2: The values files from the generator's repository
+        - repoURL: https://github.com/MCCE2024/INENPT-G8.git
+          targetRevision: feature/argo-cd-setup
+          # The path is now dynamic, pointing to the directory found by the generator
+          path: '{{path}}' 
+          ref: values # Give it a reference name
 
-        # The path to the directory containing Chart.yaml inside the Git repo
-        path: Charts/webshop # <-- Use 'path' instead of 'chart'
-        
-        helm:
-          # (4) THE MAGIC LINK: This placeholder tells Argo CD to use the
-          # values file that was found by the generator for this specific application.
-          # values.yaml in directory 'tenants'
-          valueFiles:
-            - '{{path.basename}}/values.yaml'  # Use the basename of the directory as the values file
-
-      # DESTINATION: Where to deploy the application.
+      # Destination remains the same
       destination:
         server: https://kubernetes.default.svc
-        # You can also parameterize the namespace if needed, e.g.:
-        # namespace: 'my-app-{{path.basenameNormalized}}'
         namespace: '{{path.basename}}'
+        
+      # The main source to be deployed is the chart source
+      sourceRef:
+        ref: chart
+        
+      # The Helm configuration is now at the top level of the spec
+      helm:
+        valueFiles:
+          # Use '$values/' to reference the source named 'values'
+          - '$values/values.yaml'
 
       syncPolicy:
         automated:
