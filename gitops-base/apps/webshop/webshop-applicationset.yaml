@@ -6,7 +6,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/MCCE2024/INENPT-G8
-        revision: HEAD
+        revision: feature/argo-cd-setup
         directories:
           - path: "gitops-base/apps/webshop/tenants/*"
   template:
