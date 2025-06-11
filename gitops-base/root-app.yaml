@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  # This is the main "parent" app that finds all other apps.
+  name: app-of-apps
+  # This application object itself should live in the argocd namespace.
+  namespace: argocd
+spec:
+  project: default
+  source:
+    # IMPORTANT: Replace this with the URL to YOUR Git repository.
+    repoURL: https://github.com/MCCE2024/INENPT-G8.git
+    directory:
+      recurse: true
+    # The path within the repo where Argo CD should look for app manifests.
+    # It will recursively search this directory.
+    path: gitops-base
+    
+    # The branch, tag, or commit to track.
+    targetRevision: HEAD
+    
+  destination:
+    # The destination for this root-app itself.
+    # Since it only creates other Argo CD Application objects,
+    # this namespace isn't critical, but 'argocd' is a good choice.
+    server: https://kubernetes.default.svc
+    namespace: argocd
+    
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
