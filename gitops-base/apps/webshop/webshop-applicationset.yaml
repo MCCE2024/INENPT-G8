@@ -12,7 +12,7 @@ spec:
         revision: feature/argo-cd-setup
         directories:
           # The glob pattern to find the files.
-          - path: "apps/webshop/tenants/*"
+          - path: "gitops-base/apps/webshop/tenants/*"
 
   # (2) THE TEMPLATE: This is the blueprint for the Applications that will be created.
   template:
