@@ -10,15 +10,15 @@ spec:
         # The repo where the values files are.
         repoURL: https://github.com/MCCE2024/INENPT-G8.git
         revision: feature/argo-cd-setup
-        files:
+        directories:
           # The glob pattern to find the files.
-          - path: "apps/webshop/tenants/*/*.yaml"
+          - path: "apps/webshop/tenants/*"
 
   # (2) THE TEMPLATE: This is the blueprint for the Applications that will be created.
   template:
     metadata:
       # Create a unique name for each app based on the filename (e.g., 'my-awesome-app-staging')
-      name: 'webshop-{{path.basenameNormalized}}'
+      name: 'webshop-{{path.basename}}'
     spec:
       project: default
       
@@ -37,7 +37,7 @@ spec:
           # (4) THE MAGIC LINK: This placeholder tells Argo CD to use the
           # values file that was found by the generator for this specific application.
           valueFiles:
-            - '$argocd-appset-generator-git-files-0'
+            - 'values.yaml'
 
       # DESTINATION: Where to deploy the application.
       destination:
