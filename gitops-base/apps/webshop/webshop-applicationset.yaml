@@ -9,7 +9,7 @@ spec:
       repoURL: https://github.com/MCCE2024/INENPT-G8.git
       revision: feature/argo-cd-setup
       files:
-      - path: "apps/webshop/tenants/*/values.yaml"
+      - path: "gitops-base/apps/webshop/tenants/*/values.yaml"
   template:
     metadata:
       name: 'webshop-{{path.basename}}'
