@@ -4,9 +4,7 @@ metadata:
   name: webshop-appset
   namespace: argocd
 spec:
-  goTemplate: true
-  goTemplateOptions:
-  - missingkey=error
+  # goTemplate options are not needed for this logic
   generators:
     - git:
       repoURL: https://github.com/MCCE2024/INENPT-G8.git
@@ -23,20 +21,27 @@ spec:
           prune: true
           selfHeal: true
         syncOptions:
-        - PrunePropagationPolicy=foreground
-        - PrunePropagationPolicy=background
         - CreateNamespace=true
         - ServerSideApply=true
+        # You can't have both foreground and background, choose one. Foreground is generally safer.
+        - PrunePropagationPolicy=foreground
+      # Correctly configured sources
       sources:
+        # Source 1: The Helm Chart
         - path: Charts/webshop
           repoURL: https://github.com/MCCE2024/AKTT1_G8.git
           targetRevision: 1.3.0
           helm:
             valueFiles:
-            - $values/gitops-base/apps/webshop/tenants/{{path.basename}}/values.yaml
+              # Correctly reference the file from the named 'values' source
+              - $values/values.yaml
+        # Source 2: The values file from your GitOps repo
         - repoURL: https://github.com/MCCE2024/INENPT-G8.git
           targetRevision: feature/argo-cd-setup
+          # This ref name is used in the valueFiles reference above
           ref: values
+          # Dynamically point to the directory containing the values.yaml
+          path: '{{path.directory}}'
       destination:
         namespace: '{{path.basename}}'
         server: "https://kubernetes.default.svc"
