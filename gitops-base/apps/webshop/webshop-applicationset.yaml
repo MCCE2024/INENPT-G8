@@ -7,7 +7,7 @@ spec:
   generators:
   - git:
       repoURL: https://github.com/MCCE2024/INENPT-G8.git
-      revision: HEAD
+      revision: feature/argo-cd-setup
       files:
       - path: "apps/webshop/tenants/*/values.yaml"
   template:
