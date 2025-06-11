@@ -4,7 +4,6 @@ metadata:
   name: webshop-appset
   namespace: argocd
 spec:
-  # goTemplate options are not needed for this logic
   generators:
     - git:
       repoURL: https://github.com/MCCE2024/INENPT-G8.git
@@ -15,33 +14,26 @@ spec:
     metadata:
       name: "webshop-{{path.basename}}"
     spec:
-      project: "default"
+      project: default
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
-        - CreateNamespace=true
-        - ServerSideApply=true
-        # You can't have both foreground and background, choose one. Foreground is generally safer.
-        - PrunePropagationPolicy=foreground
-      # Correctly configured sources
+          - CreateNamespace=true
+          - ServerSideApply=true
+          - PrunePropagationPolicy=foreground
       sources:
-        # Source 1: The Helm Chart
-        - path: Charts/webshop
-          repoURL: https://github.com/MCCE2024/AKTT1_G8.git
+        - repoURL: https://github.com/MCCE2024/AKTT1_G8.git
           targetRevision: 1.3.0
+          path: Charts/webshop
           helm:
             valueFiles:
-              # Correctly reference the file from the named 'values' source
               - $values/values.yaml
-        # Source 2: The values file from your GitOps repo
         - repoURL: https://github.com/MCCE2024/INENPT-G8.git
           targetRevision: feature/argo-cd-setup
-          # This ref name is used in the valueFiles reference above
           ref: values
-          # Dynamically point to the directory containing the values.yaml
-          path: '{{path.directory}}'
+          path: "{{path.directory}}"
       destination:
-        namespace: '{{path.basename}}'
-        server: "https://kubernetes.default.svc"
+        namespace: "{{path.basename}}"
+        server: https://kubernetes.default.svc
