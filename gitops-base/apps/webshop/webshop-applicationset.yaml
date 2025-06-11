@@ -5,51 +5,31 @@ metadata:
   namespace: argocd
 spec:
   generators:
-    - git:
-        repoURL: https://github.com/MCCE2024/INENPT-G8.git
-        revision: feature/argo-cd-setup
-        directories:
-          # This path MUST be correct in your Git repo
-          - path: "gitops-base/apps/webshop/tenants/*"
+  - git:
+      repoURL: https://github.com/MCCE2024/INENPT-G8.git
+      revision: HEAD
+      files:
+      - path: "apps/webshop/tenants/*/values.yaml"
   template:
     metadata:
       name: 'webshop-{{path.basename}}'
+      labels:
+        tenant: '{{path.basename}}'
     spec:
-      project: default
-      
-      # --- CORRECTED MULTIPLE SOURCES SECTION ---
-      sources:
-        # Source 1: The Helm chart from its repository
-        - repoURL: https://github.com/MCCE2024/AKTT1_G8.git
-          targetRevision: 1.3.0
-          path: Charts/webshop
-          ref: chart # Give it a reference name
-
-        # Source 2: The values files from the generator's repository
-        - repoURL: https://github.com/MCCE2024/INENPT-G8.git
-          targetRevision: feature/argo-cd-setup
-          # The path is now dynamic, pointing to the directory found by the generator
-          path: '{{path}}' 
-          ref: values # Give it a reference name
-
-      # Destination remains the same
+      project: "default"
+      source:
+        repoURL: https://github.com/MCCE2024/AKTT1_G8.git
+        targetRevision: HEAD
+        path: Chart/webshop
+        helm:
+          valueFiles:
+          - $values/apps/webshop/tenants/{{path.basename}}/values.yaml
       destination:
-        server: https://kubernetes.default.svc
-        namespace: '{{path.basename}}'
-        
-      # The main source to be deployed is the chart source
-      sourceRef:
-        ref: chart
-        
-      # The Helm configuration is now at the top level of the spec
-      helm:
-        valueFiles:
-          # Use '$values/' to reference the source named 'values'
-          - '$values/values.yaml'
-
+        server: "https://kubernetes.default.svc"
+        namespace: 'webshop-{{path.basename}}'
       syncPolicy:
         automated:
           prune: true
           selfHeal: true
         syncOptions:
-          - CreateNamespace=true
+        - CreateNamespace=true
