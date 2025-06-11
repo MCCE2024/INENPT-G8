@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
-  name: my-awesome-app
+  name: webshop-applicationset
   namespace: argocd
 spec:
   # (1) THE GENERATOR: Find all .yaml files in the 'environments' directory.
@@ -12,7 +12,7 @@ spec:
         revision: feature/argo-cd-setup
         files:
           # The glob pattern to find the files.
-          - path: "apps/my-awesome-app/environments/*.yaml"
+          - path: "apps/webshop/tenants/*/*.yaml"
 
   # (2) THE TEMPLATE: This is the blueprint for the Applications that will be created.
   template:
