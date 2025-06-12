@@ -56,17 +56,17 @@ jobs:
           # which can prevent parsing errors.
           cat > "$TF_FILE" << EOF
           # Terraform configuration for ${TENANT_NAME}
-          
+
           module "tenant_db_${TENANT_NAME}" {
             source = "../modules/tenant-db"
-          
+
             # --- Tenant Specific Variables ---
             # Replace these with the actual variables required by your tenant-db module.
             # For example:
             # tenant_name    = "${TENANT_NAME}"
             # database_size  = "small" 
             # region         = "us-east-1"
-          
+
             tags = {
               Tenant      = "${TENANT_NAME}"
               Environment = "production"
@@ -101,3 +101,15 @@ jobs:
           
           echo "Successfully pushed changes to branch: $BRANCH_NAME"
           echo "You can now create a pull request from this branch to merge the new tenant files."
+        
+      - name: 'Create Pull Request'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TENANT_NAME: ${{ github.event.inputs.tenant_name }}
+        run: |
+          BRANCH_NAME="feat/add-tenant-$TENANT_NAME"
+          gh pr create \
+            --base main \
+            --head "$BRANCH_NAME" \
+            --title "feat(tenant): Add new tenant '$TENANT_NAME'" \
+            --body "This PR adds the configuration files for the new tenant: **$TENANT_NAME**. Please review and merge to deploy."
