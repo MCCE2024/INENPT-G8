@@ -1,3 +1,5 @@
+# .github/workflows/new-tenant.yml
+
 name: 'New Tenant Setup'
 
 on:
@@ -49,24 +51,23 @@ jobs:
           # Define the Terraform file path
           TF_FILE="deployments/${TENANT_NAME}.tf"
           
-          # Create the Terraform file with the required content
-          # This content is a placeholder. You should adjust it to match
-          # the exact variables and configuration your module requires.
+          # Create the Terraform file using a heredoc.
+          # We use the TENANT_NAME shell variable throughout for consistency.
           cat <<EOF > "$TF_FILE"
-# Terraform configuration for ${{ github.event.inputs.tenant_name }}
+# Terraform configuration for ${TENANT_NAME}
 
-module "tenant_db_${{ github.event.inputs.tenant_name }}" {
+module "tenant_db_${TENANT_NAME}" {
   source = "../modules/tenant-db"
 
   # --- Tenant Specific Variables ---
   # Replace these with the actual variables required by your tenant-db module.
   # For example:
-  # tenant_name    = "${{ github.event.inputs.tenant_name }}"
+  # tenant_name    = "${TENANT_NAME}"
   # database_size  = "small" 
   # region         = "us-east-1"
 
   tags = {
-    Tenant      = "${{ github.event.inputs.tenant_name }}"
+    Tenant      = "${TENANT_NAME}"
     Environment = "production"
   }
 }
