@@ -1,0 +1,100 @@
+name: 'New Tenant Setup'
+
+on:
+  workflow_dispatch:
+    inputs:
+      tenant_name:
+        description: 'The name of the new tenant (e.g., tenant2, client-x). Use lowercase letters, numbers, and hyphens only.'
+        required: true
+        type: string
+
+jobs:
+  create-tenant-files:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 'Checkout repository'
+        uses: actions/checkout@v4
+
+      - name: 'Validate Tenant Name'
+        id: validate
+        run: |
+          TENANT_NAME="${{ github.event.inputs.tenant_name }}"
+          if [[ ! "$TENANT_NAME" =~ ^[a-z0-9]([-a-z0-9]*[a-z0-9])?$ ]]; then
+            echo "Error: Tenant name '$TENANT_NAME' is invalid."
+            echo "Please use only lowercase letters, numbers, and hyphens. It must start and end with an alphanumeric character."
+            exit 1
+          fi
+          echo "Tenant name is valid."
+
+      - name: 'Create Tenant Directory and values.yaml'
+        run: |
+          TENANT_NAME="${{ github.event.inputs.tenant_name }}"
+          
+          # Define the directory path
+          TENANT_DIR="gitops-base/apps/tenant/$TENANT_NAME"
+          
+          # Create the directory
+          mkdir -p "$TENANT_DIR"
+          echo "Created directory: $TENANT_DIR"
+          
+          # Create the values.yaml file
+          echo "namespace: $TENANT_NAME" > "$TENANT_DIR/values.yaml"
+          echo "Created $TENANT_DIR/values.yaml"
+
+      - name: 'Create Tenant Terraform File'
+        run: |
+          TENANT_NAME="${{ github.event.inputs.tenant_name }}"
+          
+          # Define the Terraform file path
+          TF_FILE="deployments/${TENANT_NAME}.tf"
+          
+          # Create the Terraform file with the required content
+          # This content is a placeholder. You should adjust it to match
+          # the exact variables and configuration your module requires.
+          cat <<EOF > "$TF_FILE"
+# Terraform configuration for ${{ github.event.inputs.tenant_name }}
+
+module "tenant_db_${{ github.event.inputs.tenant_name }}" {
+  source = "../modules/tenant-db"
+
+  # --- Tenant Specific Variables ---
+  # Replace these with the actual variables required by your tenant-db module.
+  # For example:
+  # tenant_name    = "${{ github.event.inputs.tenant_name }}"
+  # database_size  = "small" 
+  # region         = "us-east-1"
+
+  tags = {
+    Tenant      = "${{ github.event.inputs.tenant_name }}"
+    Environment = "production"
+  }
+}
+EOF
+          echo "Created Terraform file: $TF_FILE"
+
+      - name: 'Commit and Push to a New Branch'
+        run: |
+          TENANT_NAME="${{ github.event.inputs.tenant_name }}"
+          BRANCH_NAME="feat/add-tenant-$TENANT_NAME"
+          
+          # Configure Git
+          git config user.name "GitHub Actions"
+          git config user.email "github-actions@github.com"
+          
+          # Create and switch to a new branch
+          git checkout -b "$BRANCH_NAME"
+          
+          # Add the new files
+          git add "gitops-base/apps/tenant/$TENANT_NAME/values.yaml"
+          git add "deployments/$TENANT_NAME.tf"
+          
+          # Commit the changes
+          git commit -m "feat(tenant): Add new tenant '$TENANT_NAME'"
+          
+          # Push the new branch to the repository
+          # This will fail if a branch with the same name already exists.
+          git push origin "$BRANCH_NAME"
+          
+          echo "Successfully pushed changes to branch: $BRANCH_NAME"
+          echo "You can now create a pull request from this branch to merge the new tenant files."
