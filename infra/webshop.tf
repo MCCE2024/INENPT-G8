@@ -1,4 +1,4 @@
-module "app_database" {
+module "webshop-db" {
   # Path to the module directory
   source = "./modules/tenant-db"
 

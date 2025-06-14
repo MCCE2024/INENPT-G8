@@ -57,7 +57,7 @@ jobs:
           cat > "$TF_FILE" << EOF
           # Terraform configuration for ${TENANT_NAME}
 
-          module "app_database" {
+          module "${TENANT_NAME}-db" {
             # Path to the module directory
             source = "./modules/tenant-db"
 
