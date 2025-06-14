@@ -17,16 +17,16 @@ resource "exoscale_dbaas" "pg" {
   }
 }
 
-resource "exoscale_dbaas_pg_database" "appdb" {
-  # Creates a PostgreSQL database named "appdb" in the above service
-  database_name = "appdb"
-  service       = exoscale_dbaas.pg.name
-  zone          = exoscale_dbaas.pg.zone
-}
+# resource "exoscale_dbaas_pg_database" "appdb" {
+#   # Creates a PostgreSQL database named "appdb" in the above service
+#   database_name = "appdb"
+#   service       = exoscale_dbaas.pg.name
+#   zone          = exoscale_dbaas.pg.name
+# }
 
-resource "exoscale_dbaas_pg_user" "appuser" {
-  # Creates a PostgreSQL user named "appuser" with access to the service
-  username = "appuser"
-  service  = exoscale_dbaas.pg.name
-  zone     = exoscale_dbaas.pg.zone
-}
+# resource "exoscale_dbaas_pg_user" "appuser" {
+#   # Creates a PostgreSQL user named "appuser" with access to the service
+#   username = "appuser"
+#   service  = exoscale_dbaas.pg.name
+#   zone     = exoscale_dbaas.pg.zone
+# }

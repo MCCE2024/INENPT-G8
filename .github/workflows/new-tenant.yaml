@@ -49,7 +49,7 @@ jobs:
           TENANT_NAME: ${{ github.event.inputs.tenant_name }}
         run: |
           # Define the Terraform file path
-          TF_FILE="deployments/${TENANT_NAME}.tf"
+          TF_FILE="infra/${TENANT_NAME}.tf"
           
           # Create the Terraform file using a heredoc.
           # This approach isolates the script logic from the YAML structure,
@@ -57,20 +57,18 @@ jobs:
           cat > "$TF_FILE" << EOF
           # Terraform configuration for ${TENANT_NAME}
 
-          module "tenant_db_${TENANT_NAME}" {
-            source = "../modules/tenant-db"
+          module "app_database" {
+            # Path to the module directory
+            source = "./modules/tenant-db"
 
-            # --- Tenant Specific Variables ---
-            # Replace these with the actual variables required by your tenant-db module.
-            # For example:
-            # tenant_name    = "${TENANT_NAME}"
-            # database_size  = "small" 
-            # region         = "us-east-1"
+            # Pass the required variables from our service to the module
+            dbaas_service_name = exoscale_dbaas.pg.name
+            dbaas_service_zone = exoscale_dbaas.pg.zone
 
-            tags = {
-              Tenant      = "${TENANT_NAME}"
-              Environment = "production"
-            }
+            # (Optional) Override default names
+            database_name          = "${TENANT_NAME}"
+            database_user          = "${TENANT_NAME}-user"
+            kubernetes_namespace   = "${TENANT_NAME}"
           }
           EOF
           echo "Created Terraform file: $TF_FILE"
