@@ -1,4 +1,4 @@
-name: Terraform Plan & Apply  # Name of the workflow
+name: tofu Plan & Apply  # Name of the workflow
 
  # Trigger the workflow on pull requests and pushes to the main branch
 on:
@@ -7,9 +7,13 @@ on:
   push:                      # Trigger on commits pushed to main
     branches: [ main ]
 
- # Define the job for Terraform operations
+defaults:
+  run:
+    working-directory: ./infra
+
+ # Define the job for tofu operations
 jobs:
-  terraform:                 # Define a job called 'terraform'
+  tofu:                 # Define a job called 'tofu'
     runs-on: ubuntu-latest   # Use latest Ubuntu runner
 
     # Set environment variables required for AWS and Exoscale access
@@ -21,8 +25,9 @@ jobs:
       EXOSCALE_API_SECRET: ${{ secrets.EXOSCALE_API_SECRET }}
       EXOSCALE_REGION: "at-vie-2"
       TF_VAR_PGDB_PW: ${{ secrets.TF_VAR_PGDB_PW }}
+      TF_VAR_CLOUDFLARE_API_TOKEN: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
 
-    # List of steps to set up tools, validate cluster access, and run Terraform plans and applies
+    # List of steps to set up tools, validate cluster access, and run tofu plans and applies
     steps:
       - name: Checkout repository  # Step 1: Checkout code
         uses: actions/checkout@v4
@@ -52,13 +57,13 @@ jobs:
       - name: Install OpenTofu     # Step 2: Install OpenTofu CLI
         uses: opentofu/setup-opentofu@v1
         with:
-          tofu_version: 1.9.0 
+          tofu_version: 1.6.2
 
-      # Initialize the Terraform/OpenTofu working directory
+      # Initialize the tofu/OpenTofu working directory
       - name: Initialize OpenTofu  # Step 3: Initialize the working directory
-        run: tofu init -upgrade # Upgrade the OpenTofu provider plugins
+        run: tofu init # Upgrade the OpenTofu provider plugins
 
-      # Validate the Terraform configuration files
+      # Validate the tofu configuration files
       - name: Validate OpenTofu Config  # Step 4: Check syntax
         run: tofu validate
 
@@ -67,7 +72,7 @@ jobs:
         if: github.event_name == 'pull_request'
         run: tofu plan
 
-      # Automatically apply Terraform changes when code is pushed to main
+      # Automatically apply tofu changes when code is pushed to main
       - name: Run OpenTofu Apply        # Step 6: Auto apply on push to main
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: tofu apply -auto-approve
