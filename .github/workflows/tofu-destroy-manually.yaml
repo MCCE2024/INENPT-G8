@@ -7,6 +7,10 @@ on:
       confirm_destroy:
         description: "Type YES to confirm destruction"
         required: true
+
+defaults:
+  run:
+    working-directory: ./infra
 # Define the job to run the OpenTofu destroy process
 jobs:
   destroy:

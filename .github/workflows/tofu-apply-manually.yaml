@@ -9,6 +9,10 @@ on:
         description: "Type APPLY to confirm deploying the latest main branch"
         required: true
 
+defaults:
+  run:
+    working-directory: ./infra
+
 # Define the job to run the OpenTofu apply process
 jobs:
   apply:
