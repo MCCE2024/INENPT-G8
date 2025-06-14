@@ -17,8 +17,7 @@ spec:
     path: gitops-base
     
     # The branch, tag, or commit to track.
-    # targetRevision: HEAD
-    targetRevision: feature/argo-cd-setup
+    targetRevision: HEAD
     
   destination:
     # The destination for this root-app itself.
