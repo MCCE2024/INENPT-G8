@@ -88,7 +88,7 @@ jobs:
           
           # Add the new files
           git add "gitops-base/apps/tenant/$TENANT_NAME/values.yaml"
-          git add "deployments/$TENANT_NAME.tf"
+          git add "infra/$TENANT_NAME.tf"
           
           # Commit the changes
           git commit -m "feat(tenant): Add new tenant '$TENANT_NAME'"
