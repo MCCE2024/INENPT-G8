@@ -1,0 +1,30 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+spec:
+  # Use the dedicated project we created above.
+  project: default
+  destination:
+    # It's standard practice to deploy cert-manager into its own namespace.
+    namespace: cert-manager
+    server: https://kubernetes.default.svc
+  source:
+    repoURL: https://charts.jetstack.io
+    chart: cert-manager
+    # Using a recent, stable version of the cert-manager chart.
+    targetRevision: v1.18.0
+    helm:
+      values: |
+        # CRITICAL: This tells the Helm chart to install and manage the
+        # Custom Resource Definitions (CRDs) like Certificates, Issuers, etc.
+        # This is the recommended approach when deploying with Argo CD.
+        installCRDs: true
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
