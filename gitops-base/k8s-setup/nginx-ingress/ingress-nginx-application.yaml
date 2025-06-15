@@ -5,7 +5,7 @@ metadata:
   namespace: argocd
 spec:
   # The project is correct, as it grants the necessary cluster-wide permissions.
-  project: default
+  project: ingress-nginx
   destination:
     server: https://kubernetes.default.svc
     namespace: ingress-nginx
