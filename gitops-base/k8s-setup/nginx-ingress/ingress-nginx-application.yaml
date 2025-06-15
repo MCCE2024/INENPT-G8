@@ -2,21 +2,40 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: ingress-nginx
+  namespace: argocd
 spec:
+  # The project is correct, as it grants the necessary cluster-wide permissions.
+  project: default
   destination:
     server: https://kubernetes.default.svc
     namespace: ingress-nginx
   source:
     repoURL: https://kubernetes.github.io/ingress-nginx
     chart: ingress-nginx
-    targetRevision: 4.12.3
+    targetRevision: 4.10.1
     helm:
       releaseName: ingress-nginx
-  project: default
+      # UPDATED SECTION:
+      # These values help avoid the hook deadlock.
+      values: |
+        controller:
+          admissionWebhooks:
+            # This is the key change. We are disabling the 'patch' job hook,
+            # which is a common source of hangs. The 'create' hook will
+            # still run, but disabling this one often solves the problem.
+            patch:
+              enabled: false
+            # We keep this as a safety net. If the webhook service is ever slow
+            # to start, this prevents it from blocking all other resources.
+            failurePolicy: Ignore
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    # UPDATED SECTION:
+    # Adding ServerSideApply and Replace helps Argo CD better handle the complex
+    # dependencies within the ingress-nginx chart.
     syncOptions:
       - CreateNamespace=true
-      - SkipDryRunOnMissingResource=true
+      - ServerSideApply=true
+      - Replace=true

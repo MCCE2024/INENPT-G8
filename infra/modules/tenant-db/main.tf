@@ -29,6 +29,13 @@ data "exoscale_database_uri" "db_uri" {
   ]
 }
 
+# Creates a Kubernetes namespace
+resource "kubernetes_namespace" "tenant_namespace" {
+  metadata {
+    name = var.database_name
+  }
+}
+
 # Creates the Kubernetes secret with the database credentials.
 resource "kubernetes_secret" "db_secret" {
   metadata {
