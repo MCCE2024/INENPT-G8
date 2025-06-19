@@ -20,8 +20,6 @@ spec:
       values: |
         controller:
           admissionWebhooks:
-            patch:
-              enabled: false  # Keep disabled to avoid Helm hook conflicts
             failurePolicy: Ignore
             annotations:      # Add this block
               argocd.argoproj.io/hook: PostSync
