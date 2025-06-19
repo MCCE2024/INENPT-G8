@@ -34,7 +34,7 @@ jobs:
           TENANT_NAME: ${{ github.event.inputs.tenant_name }}
         run: |
           # Define the directory path
-          TENANT_DIR="gitops-base/apps/tenant/$TENANT_NAME"
+          TENANT_DIR="gitops-base/apps/webshop/tenants/$TENANT_NAME"
           
           # Create the directory
           mkdir -p "$TENANT_DIR"
