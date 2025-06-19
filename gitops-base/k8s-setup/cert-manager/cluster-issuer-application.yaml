@@ -1,0 +1,24 @@
+# gitops-base/root-app.yaml (or similar, assuming this manages child apps)
+# Add this alongside your cert-manager Application definition, or in a separate child application.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-issuers # A distinct name for this application
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1" # This ensures it's synced after cert-manager
+spec:
+  project: default
+  destination:
+    namespace: cert-manager # Or the namespace where you want these issuers
+    server: https://kubernetes.default.svc
+  source:
+    repoURL: https://github.com/MCCE2024/INENPT-G8.git 
+    path: gitops-base/k8s-setup/cert-manager/cluster-issuers # The path to the directory containing cluster-issuers.yaml
+    targetRevision: feature/improvements # Or a specific branch/tag
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false # Assuming cert-manager already creates 'cert-manager' namespace, or you define it elsewhere.
