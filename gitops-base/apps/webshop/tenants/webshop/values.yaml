@@ -41,6 +41,6 @@ frontend:
     nodePort: 30000
   containerPort: 3000 # <-- ADDED: This is the port your frontend application listens on inside its container
   env:
-    PRODUCT_SERVICE_URL: "http://product-service.webshop.svc.cluster.local:3001"
-    CART_SERVICE_URL: "http://cart-service.webshop.svc.cluster.local:3002"
-    PAYMENT_SERVICE_URL: "http://payment-service.webshop.svc.cluster.local:3003"
+    PRODUCT_SERVICE_URL: "http://webshop-product-service-service:3001"
+    CART_SERVICE_URL: "http://webshop-cart-service-service:3002"
+    PAYMENT_SERVICE_URL: "http://webshop-payment-service-service:3003"
