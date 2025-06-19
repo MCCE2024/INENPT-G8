@@ -16,6 +16,8 @@ payment-service:
   service:
     port: 3003
     nodePort: 30003
+  env:
+    CART_SERVICE_URL: "http://webshop-cart-service-service:3002"
 
 product-service:
   name: product-service
