@@ -137,7 +137,7 @@ jobs:
           git checkout -b "$BRANCH_NAME"
           
           # Add the new files
-          git add "gitops-base/apps/tenant/$TENANT_NAME/values.yaml"
+          git add "gitops-base/apps/webshop/tenants/$TENANT_NAME/values.yaml"
           git add "infra/$TENANT_NAME.tf"
           
           # Commit the changes
