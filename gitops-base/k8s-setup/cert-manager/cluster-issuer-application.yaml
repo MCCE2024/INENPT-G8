@@ -15,7 +15,7 @@ spec:
   source:
     repoURL: https://github.com/MCCE2024/INENPT-G8.git 
     path: gitops-base/k8s-setup/cert-manager/cluster-issuers # The path to the directory containing cluster-issuers.yaml
-    targetRevision: feature/improvements # Or a specific branch/tag
+    targetRevision: HEAD # Or a specific branch/tag
   syncPolicy:
     automated:
       prune: true

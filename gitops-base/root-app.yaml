@@ -17,7 +17,7 @@ spec:
     path: gitops-base
     
     # The branch, tag, or commit to track.
-    targetRevision: feature/improvements
+    targetRevision: HEAD
     
   destination:
     # The destination for this root-app itself.

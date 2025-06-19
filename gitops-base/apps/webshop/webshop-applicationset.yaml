@@ -7,7 +7,7 @@ spec:
   generators:
     - git:
         repoURL: https://github.com/MCCE2024/INENPT-G8.git
-        revision: feature/improvements
+        revision: HEAD
         files:
           - path: "gitops-base/apps/webshop/tenants/*/values.yaml"
   template:
@@ -31,7 +31,7 @@ spec:
             valueFiles:
               - $values/gitops-base/apps/webshop/tenants/{{path.basename}}/values.yaml
         - repoURL: https://github.com/MCCE2024/INENPT-G8.git
-          targetRevision: feature/improvements
+          targetRevision: HEAD
           ref: values
       destination:
         namespace: "{{path.basename}}"
