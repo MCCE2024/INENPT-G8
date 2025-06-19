@@ -25,7 +25,7 @@ spec:
           - PrunePropagationPolicy=foreground
       sources:
         - repoURL: https://github.com/MCCE2024/AKTT1_G8.git
-          targetRevision: 1.3.0
+          targetRevision: 1.4.2
           path: Charts/webshop
           helm:
             valueFiles:

@@ -1,22 +1,57 @@
+# applications/ingress-nginx-app.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: ingress-nginx
+  namespace: argocd
+  # Sync wave for ordering: if you have other apps that depend on ingress-nginx,
+  # you can give them a higher sync-wave (e.g., 2 or more).
+  # If cert-manager is wave 0, this might be wave 1 or 2 depending on your overall plan.
+  # For typical setups, this might not need a specific sync-wave if it's the first major app.
+  # If this app is a child of an "App of Apps", it won't need a sync wave here.
+  # If it's directly applied, consider if it has dependencies.
+  annotations:
+    argocd.argoproj.io/sync-wave: "1" # Example: to sync after cert-manager (wave 0)
 spec:
+  project: ingress-nginx # Reference the AppProject created above
   destination:
     server: https://kubernetes.default.svc
-    namespace: ingress-nginx
+    namespace: ingress-nginx # This is where the ingress-nginx components will be deployed
   source:
-    repoURL: https://kubernetes.github.io/ingress-nginx
+    repoURL: https://kubernetes.github.io/ingress-nginx # Official Helm repository
     chart: ingress-nginx
-    targetRevision: 4.12.3
+    targetRevision: 4.10.1 # IMPORTANT: Always use a specific, stable version.
+                            # Check https://github.com/kubernetes/ingress-nginx/releases for the latest stable chart version.
     helm:
-      releaseName: ingress-nginx
-  project: default
+      releaseName: ingress-nginx # The Helm release name
+      # Values for the ingress-nginx Helm chart.
+      values: |
+        controller:
+          kind: Deployment # Use Deployment by default, DaemonSet if you need to run on all nodes
+          service:
+            type: LoadBalancer # Or NodePort, ClusterIP depending on your cluster setup
+            # If using a cloud provider (AWS, GCP, Azure), this will provision a Load Balancer.
+            # If on-premises, you might need MetalLB or a similar solution.
+          admissionWebhooks:
+            # Re-enable the Helm hook. With ServerSideApply and Wait,
+            # ArgoCD should handle the ordering better.
+            patch:
+              enabled: true
+            failurePolicy: Fail # Recommended for production to ensure valid ingress configs
+            # You can add annotations here if you need to pass them to the admission webhook Deployment/Pod
+            # For example, to set resource limits or node selectors for the webhook.
+          publishService:
+            enabled: true # Required for proper IP address reporting on cloud LBs
+        defaultBackend:
+          enabled: true # Provides a default 404 backend if no ingress matches
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
+      prune: true # Delete resources that are no longer defined in Git
+      selfHeal: true # Automatically correct any manual changes in the cluster
     syncOptions:
-      - CreateNamespace=true
-      - SkipDryRunOnMissingResource=true
+      - CreateNamespace=true # ArgoCD will create the 'ingress-nginx' namespace if it doesn't exist
+      - ServerSideApply=true # Recommended for complex charts and better reconciliation
+      - Wait=true # ArgoCD will wait for all resources to be healthy before marking sync as complete.
+                  # This is crucial for webhook race conditions.
+      # - Replace=true # (Optional, use with caution) Can force recreation of immutable fields,
+                       # but also causes more disruption. Only enable if strictly necessary for your workflow.

@@ -1,17 +1,21 @@
 applications: # List of applications to be deployed and managed
-  - name: ${app_name}           # Name of the application (variable substitution supported)
+  - name: app-of-apps           # Name of the application (variable substitution supported)
     project: default            # ArgoCD project to which this application belongs
     source:                     # Source repository configuration
-      repoURL: ${repo_url}      # Git repository URL containing the application manifests
+      repoURL: https://github.com/MCCE2024/INENPT-G8.git     # Git repository URL containing the application manifests
       targetRevision: HEAD      # Git revision or branch to deploy from (HEAD means latest)
-      path: ${repo_path}        # Path within the repository where the manifests are located
+      path: gitops-base       # Path within the repository where the manifests are located
+    directory:
+      recurse: true
     destination:                # Target Kubernetes cluster and namespace
       server: https://kubernetes.default.svc  # Kubernetes API server address (in-cluster by default)
-      namespace: ${app_namespace}             # Kubernetes namespace to deploy the application to
+      namespace: argocd             # Kubernetes namespace to deploy the application to
     syncPolicy:                 # Policy for synchronizing application state
-      automated: {}             # Enables automated sync (auto-deploy changes)
+      automated:
+        prune: true
+        selfHeal: true            # Enables automated sync (auto-deploy changes)
       syncOptions:              # Additional sync options
         - CreateNamespace=true  # Automatically create the namespace if it does not exist
 server: # Server-level configuration for the application
   service:                      # Service configuration for the application
-    type: LoadBalancer          # Service type (e.g., ClusterIP, NodePort, LoadBalancer)
+    type: LoadBalancer        # Service type (e.g., ClusterIP, NodePort, LoadBalancer)

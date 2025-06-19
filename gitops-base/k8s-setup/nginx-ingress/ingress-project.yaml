@@ -1,0 +1,18 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: ingress-nginx
+  # It's good practice to also put the project in the argocd namespace
+  namespace: argocd
+spec:
+  # Allow deploying to any namespace on the local cluster
+  destinations:
+  - namespace: '*'
+    server: https://kubernetes.default.svc
+  # Allow manifests to come from the official ingress-nginx Helm repo
+  sourceRepos:
+  - 'https://kubernetes.github.io/ingress-nginx'
+  # CRITICAL: Allow this project to deploy cluster-scoped resources (like ClusterRole)
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'

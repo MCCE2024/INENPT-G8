@@ -16,6 +16,8 @@ payment-service:
   service:
     port: 3003
     nodePort: 30003
+  env:
+    CART_SERVICE_URL: "http://customer1-cart-service-service:3002"
 
 product-service:
   name: product-service
@@ -34,8 +36,13 @@ frontend:
   namespace: customer1
   image:
     repository: lzainzinger02/frontend
-    tag: "1.3.0"
+    tag: "1.4.0"
+    pullPolicy: Always
   service:
     port: 3000 # This is the service's port (what the Ingress connects to)
     nodePort: 30000
   containerPort: 3000 # <-- ADDED: This is the port your frontend application listens on inside its container
+  env:
+    PRODUCT_SERVICE_URL: "http://customer1-product-service-service:3001"
+    CART_SERVICE_URL: "http://customer1-cart-service-service:3002"
+    PAYMENT_SERVICE_URL: "http://customer1-payment-service-service:3003"
