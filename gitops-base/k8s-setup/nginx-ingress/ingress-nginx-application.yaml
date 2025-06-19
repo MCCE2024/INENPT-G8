@@ -20,14 +20,12 @@ spec:
       values: |
         controller:
           admissionWebhooks:
-            # This is the key change. We are disabling the 'patch' job hook,
-            # which is a common source of hangs. The 'create' hook will
-            # still run, but disabling this one often solves the problem.
             patch:
-              enabled: false
-            # We keep this as a safety net. If the webhook service is ever slow
-            # to start, this prevents it from blocking all other resources.
+              enabled: false  # Keep disabled to avoid Helm hook conflicts
             failurePolicy: Ignore
+            annotations:      # Add this block
+              argocd.argoproj.io/hook: PostSync
+              argocd.argoproj.io/hook-delete-policy: HookSucceeded
   syncPolicy:
     automated:
       prune: true
@@ -39,3 +37,4 @@ spec:
       - CreateNamespace=true
       - ServerSideApply=true
       - Replace=true
+      - Wait=true  # Ensures Argo CD waits for the resources to be ready before marking sync as complete
