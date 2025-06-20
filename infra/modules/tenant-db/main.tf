@@ -48,7 +48,7 @@ resource "kubernetes_secret" "db_secret" {
   data = {
     "DB_HOST"     = data.exoscale_database_uri.db_uri.host
     "DB_PORT"     = data.exoscale_database_uri.db_uri.port
-    "database_name"     = var.database_name
+    "DB_NAME"     = var.database_name
     "DB_USER"     = var.database_user
     "DB_PASSWORD" = exoscale_dbaas_pg_user.db_user.password # The password is fetched from the user resource
     "DB_URI"      = data.exoscale_database_uri.db_uri.uri # Full connection string
@@ -69,7 +69,7 @@ provider "postgresql" {
   port            = data.exoscale_database_uri.db_uri.port
   database        = exoscale_dbaas_pg_database.db.database_name
   username        = var.PGDB_ADMIN
-  password        = "123Pass00"
+  password        = var.PGDB_PW
   sslmode         = "require" # Exoscale DBaaS typically requires SSL
   connect_timeout = 400
 }
