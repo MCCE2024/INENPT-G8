@@ -12,6 +12,7 @@ spec:
     repoURL: https://github.com/MCCE2024/INENPT-G8.git
     directory:
       recurse: true
+      exclude: ["k8s-setup/cert-manager/cluster-issuer/*"]
     # The path within the repo where Argo CD should look for app manifests.
     # It will recursively search this directory.
     path: gitops-base
