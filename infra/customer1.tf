@@ -8,6 +8,9 @@ module "customer1-db" {
   dbaas_service_name = exoscale_dbaas.pg.name
   dbaas_service_zone = exoscale_dbaas.pg.zone
 
+  PGDB_PW = var.PGDB_PW
+  PGDB_ADMIN = var.PGDB_ADMIN
+
   # (Optional) Override default names
   database_name          = "customer1"
   database_user          = "customer1-user"
