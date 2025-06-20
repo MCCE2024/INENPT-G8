@@ -47,14 +47,16 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
 
       - name: Fetch SKS kubeconfig and store
-        # Fetch the kubeconfig for the first SKS cluster and store it for kubectl use
-        continue-on-error: true
+        # This step now pipes the output through 'tail' to remove the first line of unwanted output from the exo CLI.
         run: |
           CLUSTER_NAME=$(exo compute sks list --zone at-vie-2 --output-format json | jq -r '.[0].name')
-          exo compute sks kubeconfig $CLUSTER_NAME admin --zone at-vie-2 > kubeconfig
+          echo "Fetching kubeconfig for cluster: $CLUSTER_NAME"
+          
+          # The 'tail -n +2' command skips the first line of the output.
+          exo compute sks kubeconfig "$CLUSTER_NAME" admin --zone at-vie-2 | tail -n +2 > kubeconfig
+          
           chmod 600 kubeconfig
           echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
-          cat kubeconfig
 
       - name: Validate Kubernetes access
         # Verify that kubectl can access the Kubernetes cluster
