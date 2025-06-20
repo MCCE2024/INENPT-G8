@@ -54,6 +54,7 @@ jobs:
           exo compute sks kubeconfig $CLUSTER_NAME admin --zone at-vie-2 > kubeconfig
           chmod 600 kubeconfig
           echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
+          cat kubeconfig
 
       - name: Validate Kubernetes access
         # Verify that kubectl can access the Kubernetes cluster
