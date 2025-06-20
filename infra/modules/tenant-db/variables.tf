@@ -25,3 +25,19 @@ variable "kubernetes_namespace" {
   description = "The Kubernetes namespace where the secret will be created."
   default     = "default"
 }
+
+# DB
+variable "PGDB_ADMIN" {
+  description = "The admin username for the PostgreSQL database."
+  type        = string
+  default     = "admin"
+  sensitive = true
+  
+}
+
+variable "PGDB_PW" {
+  description = "The admin password for the PostgreSQL database."
+  type        = string
+  default     = "admin_password"
+  sensitive = true
+}

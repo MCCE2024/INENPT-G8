@@ -63,3 +63,83 @@ resource "kubernetes_secret" "db_secret" {
     data.exoscale_database_uri.db_uri,
   ]
 }
+
+provider "postgresql" {
+  host            = data.exoscale_database_uri.db_uri.host
+  port            = data.exoscale_database_uri.db_uri.port
+  database        = exoscale_dbaas_pg_database.db.database_name
+  username        = var.PGDB_ADMIN
+  password        = var.PGDB_PW
+  sslmode         = "require" # Exoscale DBaaS typically requires SSL
+  connect_timeout = 400
+}
+
+# The null_resource is now only responsible for inserting data.
+# It depends on the postgresql_table resource to ensure the table
+# exists before the INSERT statements are run.
+resource "null_resource" "product_table_setup" {
+
+  # Create a dependency on the table resource.
+  depends_on = [data.exoscale_database_uri.db_uri]
+
+  # The provisioner will run the psql command to execute our SQL.
+  # Make sure 'psql' is in your system's PATH.
+  provisioner "local-exec" {
+    command = <<-EOT
+      psql "host=${data.exoscale_database_uri.db_uri.host} port=${data.exoscale_database_uri.db_uri.port} user=${var.PGDB_ADMIN} password=${var.PGDB_PW} dbname=${exoscale_dbaas_pg_database.db.database_name}" -c "
+        -- Create the table within the 'products' schema if it doesn't already exist.
+        CREATE TABLE IF NOT EXISTS public.product (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL,
+          price NUMERIC(10, 2) NOT NULL
+        );
+
+        -- Insert 3 random products into the 'product' table.
+        INSERT INTO public.product (name, price) VALUES ('Product A', 100.00), ('Product B', 80.00), ('Product C', 20.00);
+      "
+    EOT
+  }
+}
+
+# Grant USAGE on the 'public' schema. Without this, the user cannot "see"
+# any tables within the schema, even if they have table-level permissions.
+resource "postgresql_grant" "schema_usage" {
+  database    = var.database_name
+  role        = var.database_user
+  schema      = "public"
+  object_type = "schema"
+  privileges  = ["USAGE"]
+
+  depends_on = [null_resource.product_table_setup]
+}
+
+# Grant read/write permissions on the 'product' table.
+# SELECT: read data
+# INSERT: add new rows
+# UPDATE: modify existing rows
+# DELETE: remove rows
+resource "postgresql_grant" "table_permissions" {
+  database    = var.database_name
+  role        = var.database_user
+  schema      = "public"
+  object_type = "table"
+  objects     = ["product"]
+  privileges  = ["SELECT", "INSERT", "UPDATE", "DELETE"]
+
+  depends_on = [null_resource.product_table_setup]
+}
+
+# Grant permissions on the sequence for the 'id' column.
+# The 'SERIAL' type creates a sequence behind the scenes (product_id_seq).
+# The user needs USAGE and SELECT permissions on it to allow the id to auto-increment
+# when a new row is INSERTed.
+resource "postgresql_grant" "sequence_permissions" {
+  database    = var.database_name
+  role        = var.database_user
+  schema      = "public"
+  object_type = "sequence"
+  objects     = ["product_id_seq"]
+  privileges  = ["USAGE", "SELECT"]
+
+  depends_on = [null_resource.product_table_setup]
+}

@@ -9,5 +9,9 @@ terraform {
       source  = "hashicorp/kubernetes" # Kubernetes provider
       version = "2.37.1"               # Specific version
     }
+    postgresql = {
+      source = "cyrilgdn/postgresql"
+      version = "1.25.0"
+    }
   }
 }
