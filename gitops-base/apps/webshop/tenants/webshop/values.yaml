@@ -33,7 +33,7 @@ product-service:
     enabled: false
     name: product-service
   secrets:
-    - customer1
+    - webshop
 
 frontend:
   fullnameOverride: frontend # This is used to construct the service name (frontend-service) and hostname (frontend.lzainzinger.com)
