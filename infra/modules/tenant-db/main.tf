@@ -51,7 +51,7 @@ resource "kubernetes_secret" "db_secret" {
     "DB_NAME"     = var.database_name
     "DB_USER"     = var.database_user
     "DB_PASSWORD" = exoscale_dbaas_pg_user.db_user.password # The password is fetched from the user resource
-    "DB_URI"      = "postgresql://${exoscale_dbaas_pg_user.db_user.username}:${exoscale_dbaas_pg_user.db_user.password}@${data.exoscale_database_uri.db_uri.host}:${data.exoscale_database_uri.db_uri.port}/${var.database_name}"
+    "DATABASE_URI"      = "postgresql://${exoscale_dbaas_pg_user.db_user.username}:${exoscale_dbaas_pg_user.db_user.password}@${data.exoscale_database_uri.db_uri.host}:${data.exoscale_database_uri.db_uri.port}/${var.database_name}"
   }
 
   type = "Opaque"
