@@ -206,46 +206,36 @@ Get initial Admin Password:
 ```sh
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
 ```
+
+Get IP of argocd:
+```sh
+kubectl get svc -n argocd |grep argocd-server
+```
+
+1. Setup Root-App
+```sh
+kubectl apply -f gitops-base/root-app.yaml -n argocd
+```
+
+2. Fix known issue with CertManager
+In ArgoCD-UI:
+ - Terminate the Synch
+ - Manually Sync Cert-Manger
+Now the other services should apply automatically.
+
 ---
 
-Install NGINX:
-```sh
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm repo update
+## How to create a new Tenant-Webshop
+1. Simply run the [New Tenant Setup Pipeline](https://github.com/MCCE2024/INENPT-G8/actions/workflows/new-tenant.yaml) in GitHub.
+Assign a Tenant Name without white-space and APPLY.
 
-helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
-```
+This should automatically create a new [Merge Request](https://github.com/MCCE2024/INENPT-G8/pulls)
 
-Install SealedSecrets:
-TODO
+2. Merge the [Merge Request](https://github.com/MCCE2024/INENPT-G8/pulls).
+This will apply the new Database and Tenant Values.
+ArgoCD will then Apply the new Values Yaml from the created Tenant.
 
-Install ExternalDNS:
-Create Values file for configuration:
-```sh
-provider: 
-  name: cloudflare
-env:
-  - name: CF_API_TOKEN
-    valueFrom:
-      secretKeyRef:
-        name: cloudflare-api-key
-        key: apiKey
-```
-
-Create secret:
-```sh
-kubectl create secret generic cloudflare-api-token --from-literal=apiKey=<API-KEY> --from-literal=email=<EMAIL> -n external-dns
-```
-
-```sh
-helm repo add external-dns https://kubernetes-sigs.github.io/external-dns/
-helm repo update
-
-helm upgrade --install external-dns external-dns/external-dns \
-  --namespace external-dns \
-  --create-namespace \
-  --values values.yaml
-```
+---
 
 ## 🤝 Contributing
 
