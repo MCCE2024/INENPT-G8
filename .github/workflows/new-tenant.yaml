@@ -51,6 +51,7 @@ jobs:
             service:
               port: 3002
               nodePort: 30002
+            secrets: []
 
           payment-service:
             name: payment-service
@@ -62,18 +63,22 @@ jobs:
               nodePort: 30003
             env:
               CART_SERVICE_URL: "http://${TENANT_NAME}-cart-service-service:3002"
+            secrets: []
 
           product-service:
             name: product-service
             namespace: ${TENANT_NAME}
             image:
               repository: lzainzinger02/product-service
+              tag: "1.5.0"
             service:
               port: 3001
               nodePort: 30001
             configMap:
               enabled: true
               name: product-service
+            secrets:
+              - ${TENANT_NAME}
 
           frontend:
             fullnameOverride: frontend # This is used to construct the service name (frontend-service) and hostname (frontend.lzainzinger.com)
