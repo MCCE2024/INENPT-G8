@@ -1,17 +1,25 @@
+# This ArgoCD Application deploys ExternalDNS using a Helm chart.
+# It automates DNS record management for Cloudflare.
+# ArgoCD Application API version and kind.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
+# Metadata: unique application name.
 metadata:
   name: external-dns
+# Specification: target cluster, namespace, source chart, and sync policy.
 spec:
   destination:
     server: https://kubernetes.default.svc
+    # Namespace where ExternalDNS will be deployed.
     namespace: external-dns
   source:
+    # ExternalDNS Helm chart repository and version.
     repoURL: https://kubernetes-sigs.github.io/external-dns
     chart: external-dns
     targetRevision: 1.16.1
     helm:
       releaseName: external-dns
+      # Helm values for provider settings and Cloudflare API token.
       values: |
         provider:
           name: cloudflare
@@ -24,9 +32,12 @@ spec:
                 key: apiKey
   project: default
   syncPolicy:
+    # Enable automated sync, pruning, and self-healing.
     automated:
       prune: true
       selfHeal: true
     syncOptions:
+      # Allow ArgoCD to create the namespace automatically.
       - CreateNamespace=true
+      # Skip dry run for resources not yet present.
       - SkipDryRunOnMissingResource=true

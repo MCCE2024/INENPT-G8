@@ -1,7 +1,10 @@
-# GitHub Actions workflow to manually apply infrastructure changes using OpenTofu
+# This GitHub Actions workflow manually applies infrastructure changes using OpenTofu.
+# It requires explicit user confirmation before executing the apply command.
+
+# Define the workflow name displayed in the Actions tab.
 name: OpenTofu Apply  # Workflow name shown in GitHub Actions tab
 
-# Trigger configuration for manual workflow dispatch
+# Trigger: Manual execution with required confirmation input.
 on:
   workflow_dispatch:  # Enables manual execution from the UI
     inputs:
@@ -9,12 +12,14 @@ on:
         description: "Type APPLY to confirm deploying the latest main branch"
         required: true
 
+# Default working directory for all run commands.
 defaults:
   run:
     working-directory: ./infra
 
-# Define the job to run the OpenTofu apply process
+# Define the job(s) that this workflow executes.
 jobs:
+  # Job: Executes the OpenTofu apply process after verifying confirmation.
   apply:
     # Use the latest Ubuntu runner environment
     runs-on: ubuntu-latest
@@ -30,25 +35,29 @@ jobs:
       TF_VAR_PGDB_PW: ${{ secrets.TF_VAR_PGDB_PW }}
       TF_VAR_CLOUDFLARE_API_TOKEN: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
 
-    # Steps to check input, configure tools, validate access, and run tofu apply
+    # Steps within the job, executed sequentially.
     steps:
+      # Step: Block execution if confirmation is not exactly 'APPLY'
       - name: Check confirmation input      # Block if user didn’t type APPLY
         if: ${{ github.event.inputs.confirm_apply != 'APPLY' }}
         run: |
           echo "❌ Confirmation failed. You must type APPLY to deploy."
           exit 1
 
+      # Step: Checkout the latest code from the main branch
       - name: Checkout main branch          # Pull latest infra code
         uses: actions/checkout@v4
         with:
           ref: main
 
+      # Step: Install Exoscale CLI to manage SKS cluster
       - name: Install Exoscale CLI
         # Install the Exoscale CLI to interact with SKS (Scalable Kubernetes Service)
         continue-on-error: true
         run: |
           curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
 
+      # Step: Retrieve SKS cluster kubeconfig for kubectl
       - name: Fetch SKS kubeconfig and store
         # Fetch the kubeconfig for the first SKS cluster and store it for kubectl use
         continue-on-error: true
@@ -58,22 +67,26 @@ jobs:
           chmod 600 kubeconfig
           echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
 
+      # Step: Test Kubernetes cluster access
       - name: Validate Kubernetes access
         # Verify that kubectl can access the Kubernetes cluster
         continue-on-error: true
         run: |
           kubectl get nodes
 
+      # Step: Install the specified OpenTofu version
       - name: Install OpenTofu              # Install OpenTofu
         # Set up the specified version of OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.6.2
 
+      # Step: Initialize the OpenTofu working directory
       - name: Initialize OpenTofu           # Init working directory
         # Run tofu init to initialize the Terraform/OpenTofu working directory
         run: tofu init
 
+      # Step: Execute OpenTofu apply to deploy infrastructure
       - name: Apply with OpenTofu           # Apply infrastructure
         # Run tofu apply to deploy the infrastructure changes
         run: tofu apply -auto-approve

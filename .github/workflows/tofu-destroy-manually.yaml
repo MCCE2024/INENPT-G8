@@ -1,6 +1,9 @@
-# GitHub Actions workflow to manually destroy infrastructure using OpenTofu
+# This GitHub Actions workflow manually destroys infrastructure using OpenTofu.
+# It requires explicit user confirmation before executing the destroy commands.
+
+# Define the workflow name as shown in the Actions tab.
 name: OpenTofu Destroy
-# Trigger configuration for manual workflow dispatch
+# Trigger: Manual execution with confirmation input required.
 on:
   workflow_dispatch:
     inputs:
@@ -8,11 +11,13 @@ on:
         description: "Type YES to confirm destruction"
         required: true
 
+# Default working directory for all steps.
 defaults:
   run:
     working-directory: ./infra
-# Define the job to run the OpenTofu destroy process
+# Define the job(s) that this workflow runs.
 jobs:
+  # Job: Executes OpenTofu destroy steps after verifying confirmation.
   destroy:
     # Use the latest Ubuntu runner environment
     runs-on: ubuntu-latest
@@ -28,24 +33,28 @@ jobs:
       TF_VAR_PGDB_PW: ${{ secrets.TF_VAR_PGDB_PW }}
       TF_VAR_CLOUDFLARE_API_TOKEN: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
       
-    # Steps to verify confirmation, configure tools, validate access, and run tofu destroy
+    # Steps within the destroy job, executed in sequence.
     steps:
+      # Step: Ensure input is exactly 'YES' before proceeding
       - name: Check confirmation input
         if: ${{ github.event.inputs.confirm_destroy != 'YES' }}
         run: |
           echo "❌ Confirmation failed. You must type YES to destroy."
           exit 1
+      # Step: Checkout the latest code from the main branch
       - name: Checkout main branch
         uses: actions/checkout@v4
         with:
           ref: main
 
+      # Step: Install Exoscale CLI to manage SKS cluster
       - name: Install Exoscale CLI
         # Install the Exoscale CLI to interact with SKS (Scalable Kubernetes Service)
         continue-on-error: true
         run: |
           curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
 
+      # Step: Retrieve and clean up SKS cluster kubeconfig
       - name: Fetch SKS kubeconfig and store
         # This step now pipes the output through 'tail' to remove the first line of unwanted output from the exo CLI.
         run: |
@@ -63,22 +72,26 @@ jobs:
           chmod 600 kubeconfig
           echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
 
+      # Step: Verify Kubernetes cluster accessibility
       - name: Validate Kubernetes access
         # Verify that kubectl can access the Kubernetes cluster
         continue-on-error: true
         run: |
           kubectl get nodes
 
+      # Step: Install OpenTofu CLI
       - name: Install OpenTofu
         # Set up the specified version of OpenTofu
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.6.2
 
+      # Step: Initialize OpenTofu working directory
       - name: Initialize OpenTofu
         # Run tofu init to initialize the Terraform/OpenTofu working directory
         run: tofu init
 
+      # Step: Execute OpenTofu destroy to remove infrastructure
       - name: Destroy with OpenTofu
         # Run tofu destroy to remove the Argo CD Helm release and all other resources
         run: |

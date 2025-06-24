@@ -1,7 +1,11 @@
-# .github/workflows/new-tenant.yml
+# This GitHub Actions workflow automates the setup of a new tenant.
+# It validates the tenant name, generates required Kubernetes and Terraform files,
+# commits them to a new branch, and opens a pull request.
 
+# Define the workflow name
 name: 'New Tenant Setup'
 
+# Trigger: Manual trigger with input for tenant name
 on:
   workflow_dispatch:
     inputs:
@@ -10,14 +14,19 @@ on:
         required: true
         type: string
 
+# Define the workflow job(s)
 jobs:
+  # Job: create tenant files and infrastructure configuration
   create-tenant-files:
     runs-on: ubuntu-latest
 
+    # Steps executed within the job
     steps:
+      # Step: Checkout the repository code
       - name: 'Checkout repository'
         uses: actions/checkout@v4
 
+      # Step: Validate the tenant name input to meet naming rules
       - name: 'Validate Tenant Name'
         env:
           TENANT_NAME: ${{ github.event.inputs.tenant_name }}
@@ -29,6 +38,7 @@ jobs:
           fi
           echo "Tenant name is valid."
 
+      # Step: Generate Kubernetes configuration for the tenant
       - name: 'Create Tenant Directory and values.yaml'
         env:
           TENANT_NAME: ${{ github.event.inputs.tenant_name }}
@@ -99,6 +109,7 @@ jobs:
 
           echo "Created $TENANT_DIR/values.yaml"
 
+      # Step: Generate Terraform configuration for the tenant's database
       - name: 'Create Tenant Terraform File'
         env:
           TENANT_NAME: ${{ github.event.inputs.tenant_name }}
@@ -131,6 +142,7 @@ jobs:
           EOF
           echo "Created Terraform file: $TF_FILE"
 
+      # Step: Commit the generated files to a new branch
       - name: 'Commit and Push to a New Branch'
         env:
           TENANT_NAME: ${{ github.event.inputs.tenant_name }}
@@ -158,6 +170,7 @@ jobs:
           echo "Successfully pushed changes to branch: $BRANCH_NAME"
           echo "You can now create a pull request from this branch to merge the new tenant files."
         
+      # Step: Open a pull request for review and deployment
       - name: 'Create Pull Request'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

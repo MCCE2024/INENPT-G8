@@ -1,18 +1,24 @@
+# This ApplicationSet defines how to deploy webshop instances for multiple tenants using ArgoCD.
 apiVersion: argoproj.io/v1alpha1
 kind: ApplicationSet
 metadata:
   name: webshop-appset
   namespace: argocd
 spec:
+  # Generators define how to discover tenant configurations.
   generators:
+    # Use a Git generator to find tenant values.yaml files dynamically.
     - git:
         repoURL: https://github.com/MCCE2024/INENPT-G8.git
         revision: HEAD
         files:
           - path: "gitops-base/apps/webshop/tenants/*/values.yaml"
+  # Template describes the ArgoCD Application template for each tenant.
   template:
+    # Application metadata with dynamic name per tenant.
     metadata:
       name: "webshop-{{path.basename}}"
+    # Application spec defines how to sync Helm charts for each tenant.
     spec:
       project: default
       syncPolicy:
@@ -23,6 +29,7 @@ spec:
           - CreateNamespace=true
           - ServerSideApply=true
           - PrunePropagationPolicy=foreground
+      # Multiple sources: main Helm chart and tenant-specific values.
       sources:
         - repoURL: https://github.com/MCCE2024/AKTT1_G8.git
           targetRevision: 1.5.0
@@ -33,6 +40,7 @@ spec:
         - repoURL: https://github.com/MCCE2024/INENPT-G8.git
           targetRevision: HEAD
           ref: values
+      # Where to deploy: namespace matches tenant name.
       destination:
         namespace: "{{path.basename}}"
         server: https://kubernetes.default.svc

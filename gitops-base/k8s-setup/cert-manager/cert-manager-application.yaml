@@ -1,32 +1,44 @@
+# This ArgoCD Application manifest deploys cert-manager into the cluster.
+# It configures Helm to install CRDs and enables automated sync with self-healing.
+
+# ArgoCD Application API version and kind.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
+# Application metadata: name, namespace, and sync wave.
 metadata:
   name: cert-manager
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "0"
+# Specification for deployment: project, destination, source, and sync policy.
 spec:
   # Use the dedicated project we created above.
   project: default
   destination:
+    # Target namespace where cert-manager will be installed.
     # It's standard practice to deploy cert-manager into its own namespace.
     namespace: cert-manager
     server: https://kubernetes.default.svc
   source:
+    # Source Helm chart repository and chart details.
     repoURL: https://charts.jetstack.io
     chart: cert-manager
     # Using a recent, stable version of the cert-manager chart.
     targetRevision: v1.18.0
     helm:
+      # Helm values: enable CRD installation as required by cert-manager.
       values: |
         # CRITICAL: This tells the Helm chart to install and manage the
         # Custom Resource Definitions (CRDs) like Certificates, Issuers, etc.
         # This is the recommended approach when deploying with Argo CD.
         installCRDs: true
   syncPolicy:
+    # Enable automatic sync, pruning, and self-healing.
     automated:
       prune: true
       selfHeal: true
     syncOptions:
+      # Allow ArgoCD to create the namespace automatically.
       - CreateNamespace=true
+      # Use server-side apply to manage resources.
       - ServerSideApply=true

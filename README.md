@@ -1,6 +1,31 @@
-# INENPT-G8
+# INENPT-G8: Infrastructure Automation & GitOps on Exoscale with OpenTofu and ArgoCD
 
-This project provisions and manages a  Kubernetes cluster  on the [Exoscale](https://www.exoscale.com/) cloud using  [OpenTofu](https://opentofu.org/) . It also installs  [ArgoCD](https://argo-cd.readthedocs.io/en/stable/)  to enable GitOps workflows. State management is centralized in  AWS S3 , with authentication via a dedicated  IAM user . The infrastructure lifecycle is automated using  GitHub Actions .
+This repository provides a complete solution for provisioning, configuring, and managing Kubernetes clusters on [Exoscale](https://www.exoscale.com/) via [OpenTofu](https://opentofu.org/), with GitOps deployments orchestrated by [ArgoCD](https://argo-cd.readthedocs.io/en/stable/). All infrastructure state is securely managed in AWS S3, and CI/CD operations are automated using GitHub Actions. The system is designed for multi-tenant cloud-native applications, such as university e-commerce webshops, with streamlined onboarding and robust security practices.
+
+---
+
+## 📖 Project Overview
+
+- **Automated provisioning** of Exoscale SKS Kubernetes clusters and managed PostgreSQL databases using OpenTofu (Terraform-compatible).
+- **Centralized and secure state management** in AWS S3, with access controlled by an IAM user.
+- **GitOps workflows** powered by ArgoCD for continuous application delivery.
+- **CI/CD pipelines** (plan, apply, destroy, tenant bootstrap) implemented in GitHub Actions.
+- **Multi-tenant onboarding** with self-service pipelines for new webshops.
+- **Security best practices**: secret management, state locking, and explicit workflow confirmations.
+
+---
+
+## 📝 Prerequisites
+
+### Local Tools
+- [OpenTofu CLI](https://opentofu.org/download/)
+- [kubectl](https://kubernetes.io/docs/tasks/tools/)
+- [Exoscale CLI](https://github.com/exoscale/cli)
+
+### Cloud Accounts & Permissions
+- **Exoscale**: API key/secret, SSH key uploaded to your account.
+- **AWS**: IAM user with S3 bucket access (for state backend).
+- **GitHub**: Write access to the repository to configure secrets and run workflows.
 
 ---
 
@@ -49,51 +74,23 @@ ArgoCD will then Apply the new Values Yaml from the created Tenant.
 
 ---
 
-## 🌟 Key Features
+## 🔐 Required GitHub Secrets
 
--  Provisioning of Exoscale SKS (Kubernetes) clusters 
--  Infrastructure as Code  via OpenTofu (Terraform-compatible)
--  Centralized state management in AWS S3 
--  CI/CD automation  through GitHub Actions
--  GitOps with ArgoCD  on the managed cluster
+Add these repository secrets for GitHub Actions to function:
 
----
-
-## 📋 Requirements
-
-### ✅ Local Tools
-- [OpenTofu CLI](https://opentofu.org/download/)
-- [kubectl](https://kubernetes.io/docs/tasks/tools/)
-- [Exoscale CLI](https://github.com/exoscale/cli)
-
-### ☁️ Accounts & Access
--  Exoscale Account  with:
-  - API key and secret
-  - Uploaded SSH key
--  AWS Account  with:
-  - An IAM user with S3 access
-  - An S3 bucket configured for OpenTofu state storage
--  GitHub Access  with repo write permissions
+| Secret Name              | Purpose                                    |
+|--------------------------|--------------------------------------------|
+| `EXOSCALE_API_KEY`       | Exoscale API key                           |
+| `EXOSCALE_API_SECRET`    | Exoscale API secret                        |
+| `AWS_ACCESS_KEY_ID`      | AWS IAM user access key                    |
+| `AWS_SECRET_ACCESS_KEY`  | AWS IAM user secret key                    |
+| `TF_VAR_PGDB_PW`         | PostgreSQL database user password          |
 
 ---
 
-## 🔐 GitHub Secrets
+## ⚙️ Configuration & State Backend
 
-These secrets must be added to your repository for GitHub Actions to work:
-
-| Secret Name              | Description                            |
-|--------------------------|----------------------------------------|
-| `EXOSCALE_API_KEY`       | Exoscale API key                       |
-| `EXOSCALE_API_SECRET`    | Exoscale API secret                    |
-| `AWS_ACCESS_KEY_ID`      | AWS IAM user's access key              |
-| `AWS_SECRET_ACCESS_KEY`  | AWS IAM user's secret key              |
-| `TF_VAR_PGDB_PW`         | Database user's secret key              |
-
----
-
-## ⚙️ Configuration Overview
-
-All customizable parameters are defined in `variables.tf`. Override them via a `terraform.tfvars` file like this:
+All infrastructure parameters are defined in `variables.tf` and can be overridden in a `terraform.tfvars` file:
 
 ```hcl
 exoscale_api_key         = "your-api-key"
@@ -104,39 +101,42 @@ nodepool_instance_type   = "standard.small"
 nodepool_size            = 3
 ```
 
-Your `.gitignore` excludes files like `kubeconfig` and `.terraform/`, so they won’t be committed.
+The OpenTofu backend is configured to use an AWS S3 bucket for remote state:
+- S3 bucket (e.g., `opentofu-state-inenptg8`)
+- IAM user with permissions: `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject`, `s3:ListBucket`
+- Credentials are injected via GitHub Secrets.
+
+`.gitignore` ensures that sensitive files (e.g., `kubeconfig`, `.terraform/`) are never committed.
 
 ---
 
-## 🪣 State Management with AWS S3
+## 🗄️ Database Provisioning
 
-The OpenTofu state is stored remotely in  Amazon S3 , ensuring shared access and safe locking across team environments.  
-The backend is configured in the project (`main.tf` or equivalent), and requires:
+The `db.tf` module provisions an Exoscale managed PostgreSQL 15 instance with:
+- Plan: `startup-4`
+- Daily backups at 04:00
+- Timezone: Europe/Berlin
+- Dedicated database and application user
+- Password stored as `TF_VAR_PGDB_PW` in GitHub Secrets
 
-- An AWS S3 bucket (e.g., `my-opentofu-state`)
-- An IAM user with `s3:PutObject`, `s3:GetObject`, `s3:DeleteObject`, and `s3:ListBucket` permissions
-
----
-
-## 🗄️ Database Resources
-
-The `db.tf` file provisions a managed PostgreSQL 15 instance in Exoscale using the `startup-4` plan. It configures daily backups at 04:00, applies a timezone setting of Europe/Berlin, and creates a dedicated database and application user. All resource parameters are customizable via `variables.tf` and `terraform.tfvars`, ensuring seamless integration with the Kubernetes infrastructure.
-Note: The password is stored in a GitHub Secret (TF_VAR_PGDB_PW) and used as a Terraform variable.
+All parameters are customizable via `variables.tf` and `terraform.tfvars`. The database is tightly integrated with the Kubernetes cluster for seamless application deployments.
 
 ---
 
-## 📦 Project Structure
+## 📁 Project Structure
 
 ```
 .
-├── argocd.tf                 # ArgoCD deployment
-├── sks.tf                    # SKS cluster and node pool
-├── variables.tf              # Input variables
-├── versions.tf               # Provider & OpenTofu version config
-├── .gitignore                # Excludes kubeconfig and .terraform
-├── pipeline.yaml             # CI pipeline for plan & apply
-├── tofu-apply-manually.yaml # Manual apply trigger with confirmation
-├── tofu-destroy-manually.yaml # Manual destroy trigger with confirmation
+├── argocd.tf                   # ArgoCD deployment resources
+├── sks.tf                      # Exoscale SKS clusters and node pools
+├── db.tf                       # Managed PostgreSQL provisioning
+├── variables.tf                # All configurable variables
+├── versions.tf                 # Provider and OpenTofu version constraints
+├── .gitignore                  # Excludes state, kubeconfig, and temp files
+├── pipeline.yaml               # Main CI/CD pipeline
+├── tofu-apply-manually.yaml    # Manual apply workflow
+├── tofu-destroy-manually.yaml  # Manual destroy workflow
+├── .github/workflows/          # All workflow YAMLs
 ```
 
 ---
@@ -159,17 +159,26 @@ tofu apply
 
 ---
 
-## ⚙️ GitHub Actions: CI/CD Pipelines
+## 🚦 CI/CD Workflows
 
-This project uses GitHub Actions for infrastructure automation:
+### `pipeline.yaml` (Main Pipeline)
+**Trigger:** On push/PR to `main`
+- Installs required tools
+- Validates OpenTofu configuration
+- Runs `tofu plan` on PRs
+- Applies changes with `tofu apply -auto-approve` on direct pushes to `main`
 
-### 🔁 Auto Plan & Apply on Commit to `main`
-When you  push or merge to the `main` branch , this workflow is triggered:
+### `tofu-apply-manually.yaml` (Manual Apply)
+**Trigger:** Manually from GitHub Actions UI
+- Prompts for confirmation (`APPLY`)
+- Runs `tofu apply` if confirmed
 
-- Validates the OpenTofu configuration
-- Runs `tofu plan` for pull requests
-- Applies automatically with `tofu apply -auto-approve` on direct push  
-→ See: `.github/workflows/pipeline.yaml`
+### `tofu-destroy-manually.yaml` (Manual Destroy)
+**Trigger:** Manually from GitHub Actions UI
+- Prompts for confirmation (`YES`)
+- Runs `tofu destroy` if confirmed
+
+All workflows are located in `.github/workflows/` and enforce secure, auditable automation.
 
 ### 🧪 Manual Apply via GitHub Actions
 You can trigger the apply step manually for extra safety:
@@ -189,84 +198,88 @@ To remove all infrastructure manually:
 
 ---
 
-## 📄 GitHub Workflow Descriptions
+## 🧑‍💻 New Tenant Setup Procedure
 
-The project includes three automated workflows in `.github/workflows/`:
+To create a new webshop tenant:
+1. **Run the [New Tenant Setup Pipeline](https://github.com/MCCE2024/INENPT-G8/actions/workflows/new-tenant.yaml):**
+   - Enter a tenant name (no spaces) and start the workflow.
+   - A pull request is generated with the new tenant configuration.
+2. **Merge the Pull Request:**
+   - Triggers provisioning of the tenant’s database and values.
+   - ArgoCD detects the new values file and deploys the tenant application.
+3. **Access the Tenant Shop:**
+   - The webshop is available at `https://<tenant-name>.lzainzinger.com`
 
-- **`pipeline.yaml`**  
-  Runs automatically on every push or PR to `main`. It:
-  - Installs CLI tools and validates Kubernetes access
-  - Runs `tofu plan` on PRs
-  - Runs `tofu apply -auto-approve` on direct pushes to `main`
+**Known Issues:**
+- If `product-service` fails to start, the database or secret may not be ready. Delete the pod after a successful `tofu apply` to retry.
+- Certificate provisioning may take a few minutes. If you see certificate errors, wait and retry.
 
-- **`tofu-apply-manually.yaml`**  
-  A manual GitHub Action that:
-  - Allows maintainers to trigger `tofu apply` from the UI
-  - Requires entering `APPLY` as confirmation
+---
 
-- **`tofu-destroy-manually.yaml`**  
-  A manual GitHub Action that:
-  - Destroys all infrastructure provisioned by OpenTofu
-  - Requires typing `YES` to proceed, as a safety guard
+## 🥾 ArgoCD Bootstrap Instructions
 
-These workflows help enforce secure and predictable automation for both day-to-day updates and exceptional maintenance.
-
-## ☁️ What Gets Deployed?
-
--  Exoscale SKS cluster  in region `at-vie-2`
--  One node pool  with 3 `standard.small` nodes
--  ArgoCD  installed to manage app deployments via Git
--  State backend  stored securely in AWS S3
--  CI/CD automation  for provisioning and cleanup
+1. **Retrieve ArgoCD admin password:**
+   ```sh
+   kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+   ```
+2. **Get ArgoCD server IP:**
+   ```sh
+   kubectl get svc -n argocd | grep argocd-server
+   ```
+3. **Apply Root Application:**
+   ```sh
+   kubectl apply -f gitops-base/root-app.yaml -n argocd
+   ```
+4. **Fix CertManager sync issue:**
+   - In the ArgoCD UI, terminate the sync and manually sync CertManager.
+   - Dependent services will then apply automatically.
 
 ---
 
 ## 🛠️ Troubleshooting
 
-If a GitHub Action fails:
+**GitHub Actions failures:**
+- Review logs in the Actions tab
+- Ensure all required secrets are set
+- Check AWS and Exoscale account status and permissions
+- Re-run workflows manually if needed
 
-- Check the **Actions** tab in GitHub to view full logs
-- Ensure required secrets are configured in the repository
-- Make sure your AWS and Exoscale accounts are active and properly scoped
-- Re-run workflows manually via GitHub UI if needed
-
-For local issues:
-
-- Run `tofu validate` to check configuration syntax
-- Use `kubectl get nodes` to test cluster connectivity
-- Re-run `tofu init` if working directory errors occur
-
-## 🔐 Security
-
-- GitHub Actions use encrypted secrets for all API keys
-- Terraform state is securely stored in AWS S3
-- Manual workflows require explicit typed confirmation to reduce risk
-- `.gitignore` prevents committing sensitive config files like `kubeconfig`
+**Local issues:**
+- Run `tofu validate` for syntax/config errors
+- Use `kubectl get nodes` to verify cluster connectivity
+- Run `tofu init` to reinitialize the working directory if necessary
 
 ---
 
-## 🤝 Contributing
+## 🔒 Security Practices
 
-We welcome contributions from the team.  
-Please follow this workflow:
+- All API keys and sensitive credentials are stored as encrypted GitHub Secrets
+- State files are stored securely in AWS S3 with locking enabled; never committed
+- Manual workflows require explicit confirmation to prevent accidental changes
+- `.gitignore` ensures sensitive files (e.g., `kubeconfig`, `.terraform/`) are never committed
 
-1. Fork the repo and clone your fork
+---
+
+## 🤝 Contributing Guidelines
+
+We welcome contributions! Please follow this workflow:
+1. Fork the repository and clone your fork
 2. Create a feature branch:  
    `git checkout -b feature/my-change`
-3. Make your changes and commit
+3. Make and commit your changes
 4. Push to your fork and open a Pull Request
 
-Guidelines:
-- Use clean, modular infra code
-- Validate configs with `tofu validate`
-- Document any major changes
+**Best Practices:**
+- Keep infrastructure code modular and well-documented
+- Always validate changes with `tofu validate`
+- Document any significant updates in the PR description
 
 ---
 
-## 📚 References
+## 📚 References & Further Reading
 
-- [OpenTofu Docs](https://opentofu.org/docs/)
-- [Exoscale SKS](https://community.exoscale.com/documentation/sks/)
-- [ArgoCD](https://argo-cd.readthedocs.io/)
-- [GitHub Actions](https://docs.github.com/en/actions)
-- [Terraform Remote State in S3](https://developer.hashicorp.com/terraform/language/settings/backends/s3)
+- [OpenTofu Documentation](https://opentofu.org/docs/)
+- [Exoscale SKS Documentation](https://community.exoscale.com/documentation/sks/)
+- [ArgoCD Documentation](https://argo-cd.readthedocs.io/)
+- [GitHub Actions Documentation](https://docs.github.com/en/actions)
+- [Terraform S3 Backend](https://developer.hashicorp.com/terraform/language/settings/backends/s3)

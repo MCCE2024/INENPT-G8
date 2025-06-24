@@ -1,18 +1,22 @@
+# This GitHub Actions workflow manages the OpenTofu infrastructure lifecycle.
+# It validates, plans, and applies changes for both pull requests and direct pushes to main.
 name: tofu Plan & Apply  # Name of the workflow
 
- # Trigger the workflow on pull requests and pushes to the main branch
+# Define the events that trigger this workflow.
 on:
   pull_request:              # Trigger on PRs targeting main
     branches: [ main ]
   push:                      # Trigger on commits pushed to main
     branches: [ main ]
 
+# Set the default working directory for all steps.
 defaults:
   run:
     working-directory: ./infra
 
- # Define the job for tofu operations
+# Declare the job(s) executed by this workflow.
 jobs:
+  # Job: Executes OpenTofu operations including plan and apply.
   tofu:                 # Define a job called 'tofu'
     runs-on: ubuntu-latest   # Use latest Ubuntu runner
 
@@ -27,18 +31,19 @@ jobs:
       TF_VAR_PGDB_PW: ${{ secrets.TF_VAR_PGDB_PW }}
       TF_VAR_CLOUDFLARE_API_TOKEN: ${{ secrets.TF_VAR_CLOUDFLARE_API_TOKEN }}
 
-    # List of steps to set up tools, validate cluster access, and run tofu plans and applies
+    # Sequential steps to prepare the environment and execute OpenTofu commands.
     steps:
+      # Step: Checkout the repository code
       - name: Checkout repository  # Step 1: Checkout code
         uses: actions/checkout@v4
 
-      # Install the Exoscale CLI tool for interacting with the SKS cluster
+      # Step: Install Exoscale CLI for SKS cluster management
       - name: Install Exoscale CLI
         continue-on-error: true
         run: |
           curl -fsSL https://raw.githubusercontent.com/exoscale/cli/master/install-latest.sh | sh
 
-      # Get the kubeconfig of the first SKS cluster and save it for kubectl access
+      # Step: Retrieve SKS cluster kubeconfig
       - name: Fetch SKS kubeconfig and store
         continue-on-error: true
         run: |
@@ -47,32 +52,32 @@ jobs:
           chmod 600 kubeconfig
           echo "KUBECONFIG=$(pwd)/kubeconfig" >> $GITHUB_ENV
 
-      # Check if the Kubernetes cluster is accessible
+      # Step: Test cluster connectivity
       - name: Validate Kubernetes access
         continue-on-error: true
         run: |
           kubectl get nodes
 
-      # Install the specified version of OpenTofu CLI
+      # Step: Install OpenTofu CLI
       - name: Install OpenTofu     # Step 2: Install OpenTofu CLI
         uses: opentofu/setup-opentofu@v1
         with:
           tofu_version: 1.6.2
 
-      # Initialize the tofu/OpenTofu working directory
+      # Step: Initialize OpenTofu working directory
       - name: Initialize OpenTofu  # Step 3: Initialize the working directory
         run: tofu init # Upgrade the OpenTofu provider plugins
 
-      # Validate the tofu configuration files
+      # Step: Validate configuration syntax
       - name: Validate OpenTofu Config  # Step 4: Check syntax
         run: tofu validate
 
-      # Run tofu plan to preview changes on pull request events
+      # Step: Generate plan preview on PR
       - name: Run OpenTofu Plan         # Step 5: Plan changes on PR
         if: github.event_name == 'pull_request'
         run: tofu plan
 
-      # Automatically apply tofu changes when code is pushed to main
+      # Step: Apply changes automatically on push to main
       - name: Run OpenTofu Apply        # Step 6: Auto apply on push to main
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: tofu apply -auto-approve
