@@ -4,6 +4,51 @@ This project provisions and manages a  Kubernetes cluster  on the [Exoscale](htt
 
 ---
 
+## How to use this Repo
+
+### 🥾 K8s Bootstrap
+
+Get initial Admin Password:
+```sh
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
+Get IP of argocd:
+```sh
+kubectl get svc -n argocd |grep argocd-server
+```
+
+1. Setup Root-App
+```sh
+kubectl apply -f gitops-base/root-app.yaml -n argocd
+```
+
+2. Fix known issue with CertManager
+In ArgoCD-UI:
+ - Terminate the Synch
+ - Manually Sync Cert-Manger
+Now the other services should apply automatically.
+
+---
+
+### How to create a new Tenant-Webshop
+1. Simply run the [New Tenant Setup Pipeline](https://github.com/MCCE2024/INENPT-G8/actions/workflows/new-tenant.yaml) in GitHub.
+Assign a Tenant Name without white-space and APPLY.
+
+This should automatically create a new [Merge Request](https://github.com/MCCE2024/INENPT-G8/pulls)
+
+2. Merge the [Merge Request](https://github.com/MCCE2024/INENPT-G8/pulls).
+This will apply the new Database and Tenant Values.
+ArgoCD will then Apply the new Values Yaml from the created Tenant.
+
+3. The new tenant will be available at <tenant-name>.lzainzinger.com
+
+⚠️ **Known Issues** ⚠️
+- If the product-service pod fails to start, this could be due to the db-secret or the db not beeing deployed yet, just delete the pod after the tofu apply was OK.
+- The certificate creation takes a while, if the tenant shop is not available with a certificate issue, just wait a bit.
+
+---
+
 ## 🌟 Key Features
 
 -  Provisioning of Exoscale SKS (Kubernetes) clusters 
@@ -197,43 +242,6 @@ For local issues:
 - Terraform state is securely stored in AWS S3
 - Manual workflows require explicit typed confirmation to reduce risk
 - `.gitignore` prevents committing sensitive config files like `kubeconfig`
-
----
-
-## 🥾 K8s Bootstrap
-
-Get initial Admin Password:
-```sh
-kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
-```
-
-Get IP of argocd:
-```sh
-kubectl get svc -n argocd |grep argocd-server
-```
-
-1. Setup Root-App
-```sh
-kubectl apply -f gitops-base/root-app.yaml -n argocd
-```
-
-2. Fix known issue with CertManager
-In ArgoCD-UI:
- - Terminate the Synch
- - Manually Sync Cert-Manger
-Now the other services should apply automatically.
-
----
-
-## How to create a new Tenant-Webshop
-1. Simply run the [New Tenant Setup Pipeline](https://github.com/MCCE2024/INENPT-G8/actions/workflows/new-tenant.yaml) in GitHub.
-Assign a Tenant Name without white-space and APPLY.
-
-This should automatically create a new [Merge Request](https://github.com/MCCE2024/INENPT-G8/pulls)
-
-2. Merge the [Merge Request](https://github.com/MCCE2024/INENPT-G8/pulls).
-This will apply the new Database and Tenant Values.
-ArgoCD will then Apply the new Values Yaml from the created Tenant.
 
 ---
 
