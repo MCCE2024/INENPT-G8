@@ -75,7 +75,7 @@ jobs:
               port: 3001
               nodePort: 30001
             configMap:
-              enabled: true
+              enabled: false
               name: product-service
             secrets:
               - ${TENANT_NAME}
