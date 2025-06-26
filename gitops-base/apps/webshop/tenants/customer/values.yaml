@@ -1,0 +1,53 @@
+namespace: customer
+cart-service:
+  name: cart-service
+  namespace: customer
+  image:
+    repository: lzainzinger02/cart-service
+  service:
+    port: 3002
+    nodePort: 30002
+  secrets: []
+
+payment-service:
+  name: payment-service
+  namespace: customer
+  image:
+    repository: lzainzinger02/payment-service
+  service:
+    port: 3003
+    nodePort: 30003
+  env:
+    CART_SERVICE_URL: "http://customer-cart-service-service:3002"
+  secrets: []
+
+product-service:
+  name: product-service
+  namespace: customer
+  image:
+    repository: lzainzinger02/product-service
+    tag: "1.5.0"
+  service:
+    port: 3001
+    nodePort: 30001
+  configMap:
+    enabled: false
+    name: product-service
+  secrets:
+    - customer
+
+frontend:
+  fullnameOverride: frontend # This is used to construct the service name (frontend-service) and hostname (frontend.lzainzinger.com)
+  namespace: customer
+  image:
+    repository: lzainzinger02/frontend
+    tag: "1.4.0"
+    pullPolicy: Always
+  service:
+    port: 3000 # This is the service's port (what the Ingress connects to)
+    nodePort: 30000
+  containerPort: 3000 # <-- ADDED: This is the port your frontend application listens on inside its container
+  env:
+    PRODUCT_SERVICE_URL: "http://customer-product-service-service:3001"
+    CART_SERVICE_URL: "http://customer-cart-service-service:3002"
+    PAYMENT_SERVICE_URL: "http://customer-payment-service-service:3003"
