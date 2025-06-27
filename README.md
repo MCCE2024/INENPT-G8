@@ -85,6 +85,7 @@ Add these repository secrets for GitHub Actions to function:
 | `AWS_ACCESS_KEY_ID`      | AWS IAM user access key                    |
 | `AWS_SECRET_ACCESS_KEY`  | AWS IAM user secret key                    |
 | `TF_VAR_PGDB_PW`         | PostgreSQL database user password          |
+| `TF_VAR_CLOUDFLARE_API_TOKEN`         | API Token for Cloudflare DNS          |
 
 ---
 
@@ -127,16 +128,38 @@ All parameters are customizable via `variables.tf` and `terraform.tfvars`. The d
 
 ```
 .
-├── argocd.tf                   # ArgoCD deployment resources
-├── sks.tf                      # Exoscale SKS clusters and node pools
-├── db.tf                       # Managed PostgreSQL provisioning
-├── variables.tf                # All configurable variables
-├── versions.tf                 # Provider and OpenTofu version constraints
-├── .gitignore                  # Excludes state, kubeconfig, and temp files
-├── pipeline.yaml               # Main CI/CD pipeline
-├── tofu-apply-manually.yaml    # Manual apply workflow
-├── tofu-destroy-manually.yaml  # Manual destroy workflow
-├── .github/workflows/          # All workflow YAMLs
+├── .github
+│   └── workflows
+│       ├── new-tenant.yaml
+│       ├── pipeline.yaml
+│       ├── tofu-apply-manually.yaml
+│       └── tofu-destroy-manually.yaml
+├── gitops-base
+│   └── apps
+│       └── webshop
+│           └── tenants
+│               ├── customer
+|               |   └── values.yaml
+│               ├── webshop
+|               |   └── values.yaml
+│               └── webshop-applicationset.yaml
+├── k8s-setup
+│   ├── cert-manager
+│   ├── external-dns
+│   ├── nginx-ingress
+│   └── root-app.yaml
+└── infra
+    ├── modules/tenant-db
+    ├── .terraform.lock.hcl
+    ├── app-values.yaml
+    ├── argocd.tf
+    ├── customer.tf
+    ├── db.tf
+    ├── secrets.tf
+    ├── sks.tf
+    ├── variables.tf
+    ├── versions.tf
+    └── webshop.tf
 ```
 
 ---
@@ -147,7 +170,7 @@ All parameters are customizable via `variables.tf` and `terraform.tfvars`. The d
 
 ```bash
 git clone https://github.com/MCCE2024/INENPT-G8.git
-cd INENPT-G8
+cd INENPT-G8/infra
 tofu init
 ```
 
@@ -177,6 +200,11 @@ tofu apply
 **Trigger:** Manually from GitHub Actions UI
 - Prompts for confirmation (`YES`)
 - Runs `tofu destroy` if confirmed
+
+### `new-tenant.yaml` (Creation of new tenant webshop)
+**Trigger:** Manually from GitHub Actions UI
+- Prompts for tenant-name (`name-of-tenant`)
+- Creates a MR to main with new tenant configuration
 
 All workflows are located in `.github/workflows/` and enforce secure, auditable automation.
 
